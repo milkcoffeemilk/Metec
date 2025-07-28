@@ -8,6 +8,7 @@
     body { font-family: sans-serif; padding: 20px; }
     input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; }
     #userName { margin-bottom: 20px; font-weight: bold; color: green; }
+    #otherReasonBox { display: none; }
   </style>
 </head>
 <body>
@@ -16,25 +17,56 @@
 
   <form id="leaveForm">
     <input type="text" name="name" id="name" placeholder="姓名" required readonly>
-    <select name="type" required>
+
+    <label for="type">請假類型：</label>
+    <select name="type" id="type" required>
       <option value="">請選擇請假類型</option>
+      <option value="年假">年假</option>
       <option value="事假">事假</option>
       <option value="病假">病假</option>
-      <option value="特休">特休</option>
+      <option value="婚假">婚假</option>
+      <option value="喪假">喪假</option>
+      <option value="公傷假">公傷假</option>
+      <option value="產假">產假</option>
+      <option value="產檢假">產檢假</option>
+      <option value="陪產假">陪產假</option>
+      <option value="公假">公假</option>
     </select>
-    <input type="date" name="dateStart" required>
-    <input type="date" name="dateEnd" required>
-    <textarea name="reason" placeholder="請假原因" required></textarea>
+
+    <label for="reason">請假事由：</label>
+    <select name="reason" id="reason" required>
+      <option value="">請選擇事由</option>
+      <option value="辦理私事">辦理私事(例如：拜拜、修車、區公所辦理、銀行、搬家…)</option>
+      <option value="休息">休息(例如：無特殊原因，只是要休息)</option>
+      <option value="旅遊娛樂">旅遊/娛樂(例如：出國、家庭旅遊、聽演唱會…)</option>
+      <option value="生病家人">生病/就診-家人(例如：帶父親門診、術後照顧、回診)</option>
+      <option value="生病本人">生病/就診-本人(例如：感冒、牙痛、抽血、生理假)</option>
+      <option value="本人確診">本人確診(例如：本人COVID 19確診)</option>
+      <option value="登革熱噴藥">配合登革熱噴藥(當日可請公假)</option>
+      <option value="防疫照顧">防疫照顧(例如：家人COVID 19確診)</option>
+      <option value="颱風假">颱風假(例如:颱風、豪雨假)</option>
+      <option value="加班">加班(例如:申請加班)</option>
+      <option value="其他">其他</option>
+    </select>
+
+    <input type="text" name="reasonDetail" id="otherReasonBox" placeholder="請輸入其他請假事由">
+
+    <label for="dateStart">開始時間：</label>
+    <input type="datetime-local" name="dateStart" required>
+
+    <label for="dateEnd">結束時間：</label>
+    <input type="datetime-local" name="dateEnd" required>
+
+    <textarea name="note" placeholder="補充說明（非必填）"></textarea>
     <button type="submit">送出</button>
   </form>
 
   <script>
     const liffId = "2007824757-mvngBGAJ";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S_LnmWvyL82tRbzeCgT5201uMT7vUdnZa5nWLhSYtsxL94UGDInvYU7fkilvM3pd/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxUo7p_Qfh84uFXvN14GT6Y_GpAY3NT7G66jjLcw1WuA0tTegHbEB25gboVUF6Gs5gB-g/exec";
 
     async function main() {
       await liff.init({ liffId });
-
       if (!liff.isLoggedIn()) {
         liff.login();
         return;
@@ -50,16 +82,31 @@
       }
     }
 
+    // 當使用者選擇「其他」時，顯示輸入框
+    document.getElementById("reason").addEventListener("change", function () {
+      const isOther = this.value === "其他";
+      document.getElementById("otherReasonBox").style.display = isOther ? "block" : "none";
+      document.getElementById("otherReasonBox").required = isOther;
+    });
+
     document.getElementById("leaveForm").addEventListener("submit", e => {
       e.preventDefault();
-      const formData = new FormData(e.target);
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // 如果選了「其他」，把輸入的文字當作 reason 的值
+      if (form.reason.value === "其他") {
+        formData.set("reason", document.getElementById("otherReasonBox").value);
+      }
+
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(() => {
-          alert("已送出！");
+          alert("✅ 已送出！");
           liff.closeWindow();
         })
         .catch(err => {
-          alert("送出失敗！");
+          alert("❌ 送出失敗！");
           console.error(err);
         });
     });
