@@ -2,13 +2,14 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>請假表單</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
     input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; }
     #userName { margin-bottom: 20px; font-weight: bold; color: green; }
-    #otherReasonBox { display: none; }
+    #otherReasonText { display: none; }
   </style>
 </head>
 <body>
@@ -18,8 +19,7 @@
   <form id="leaveForm">
     <input type="text" name="name" id="name" placeholder="姓名" required readonly>
 
-    <label for="type">請假類型：</label>
-    <select name="type" id="type" required>
+    <select name="type" required>
       <option value="">請選擇請假類型</option>
       <option value="年假">年假</option>
       <option value="事假">事假</option>
@@ -29,47 +29,44 @@
       <option value="公傷假">公傷假</option>
       <option value="產假">產假</option>
       <option value="產檢假">產檢假</option>
-
       <option value="陪產假">陪產假</option>
-      
       <option value="公假">公假</option>
-
     </select>
 
-    <label for="reason">請假事由：</label>
-    <select name="reason" id="reason" required>
+    <label>開始時間</label>
+    <input type="datetime-local" name="dateStart" required>
+
+    <label>結束時間</label>
+    <input type="datetime-local" name="dateEnd" required>
+
+    <label>事由分類</label>
+    <select name="reasonOption" id="reasonOption" required>
       <option value="">請選擇事由</option>
-      <option value="辦理私事">辦理私事(例如：拜拜、修車、區公所辦理、銀行、搬家…)</option>
-      <option value="休息">休息(例如：無特殊原因，只是要休息)</option>
-      <option value="旅遊娛樂">旅遊/娛樂(例如：出國、家庭旅遊、聽演唱會…)</option>
-      <option value="生病家人">生病/就診-家人(例如：帶父親門診、術後照顧、回診)</option>
-      <option value="生病本人">生病/就診-本人(例如：感冒、牙痛、抽血、生理假)</option>
-      <option value="本人確診">本人確診(例如：本人COVID 19確診)</option>
-      <option value="登革熱噴藥">配合登革熱噴藥(當日可請公假)</option>
-      <option value="防疫照顧">防疫照顧(例如：家人COVID 19確診)</option>
-      <option value="颱風假">颱風假(例如:颱風、豪雨假)</option>
-      <option value="加班">加班(例如:申請加班)</option>
+      <option value="辦理私事">辦理私事</option>
+      <option value="休息">休息</option>
+      <option value="旅遊/娛樂">旅遊/娛樂</option>
+      <option value="生病/就診-家人">生病/就診-家人</option>
+      <option value="生病/就診-本人">生病/就診-本人</option>
+      <option value="本人確診">本人確診</option>
+      <option value="配合登革熱噴藥">配合登革熱噴藥</option>
+      <option value="防疫照顧">防疫照顧</option>
+      <option value="颱風假">颱風假</option>
+      <option value="加班">加班</option>
       <option value="其他">其他</option>
     </select>
 
-    <input type="text" name="reasonDetail" id="otherReasonBox" placeholder="請輸入其他請假事由">
+    <textarea id="otherReasonText" name="reasonText" placeholder="請輸入其他說明"></textarea>
 
-    <label for="dateStart">開始時間：</label>
-    <input type="datetime-local" name="dateStart" required>
-
-    <label for="dateEnd">結束時間：</label>
-    <input type="datetime-local" name="dateEnd" required>
-
-    <textarea name="note" placeholder="補充說明（非必填）"></textarea>
     <button type="submit">送出</button>
   </form>
 
   <script>
     const liffId = "2007824757-mvngBGAJ";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxUo7p_Qfh84uFXvN14GT6Y_GpAY3NT7G66jjLcw1WuA0tTegHbEB25gboVUF6Gs5gB-g/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbw8DExa7dEV1C-6uxN2mV8eWDeXImHLeblDSPTyHri13_u2vUWufD3XJ0tpBisdwbGMgA/exec";
 
     async function main() {
       await liff.init({ liffId });
+
       if (!liff.isLoggedIn()) {
         liff.login();
         return;
@@ -79,29 +76,25 @@
         const profile = await liff.getProfile();
         document.getElementById("userName").textContent = `👤 目前登入者：${profile.displayName}`;
         document.getElementById("name").value = profile.displayName;
+
+        // 將 userId 存起來
+        document.getElementById("leaveForm").dataset.userId = liff.getContext().userId || "N/A";
+
       } catch (err) {
         document.getElementById("userName").textContent = "⚠️ 無法取得使用者資訊";
         console.error(err);
       }
     }
 
-    // 當使用者選擇「其他」時，顯示輸入框
-    document.getElementById("reason").addEventListener("change", function () {
-      const isOther = this.value === "其他";
-      document.getElementById("otherReasonBox").style.display = isOther ? "block" : "none";
-      document.getElementById("otherReasonBox").required = isOther;
+    document.getElementById("reasonOption").addEventListener("change", function() {
+      document.getElementById("otherReasonText").style.display =
+        this.value === "其他" ? "block" : "none";
     });
 
     document.getElementById("leaveForm").addEventListener("submit", e => {
       e.preventDefault();
-
-      const form = e.target;
-      const formData = new FormData(form);
-
-      // 如果選了「其他」，把輸入的文字當作 reason 的值
-      if (form.reason.value === "其他") {
-        formData.set("reason", document.getElementById("otherReasonBox").value);
-      }
+      const formData = new FormData(e.target);
+      formData.append("userId", document.getElementById("leaveForm").dataset.userId || "");
 
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(() => {
