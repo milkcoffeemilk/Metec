@@ -1,86 +1,70 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>請假表單</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, textarea, button {
-      width: 100%;
-      margin-top: 5px;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; }
+    #userName { margin-bottom: 20px; font-weight: bold; color: green; }
   </style>
 </head>
 <body>
-  <h2>請假申請</h2>
+
+  <div id="userName">🔄 載入中...</div>
+
   <form id="leaveForm">
-    <label for="name">姓名：</label>
-    <input type="text" id="name" name="name" readonly>
-
-    <label for="date">請假日期：</label>
-    <input type="date" id="date" name="date" required>
-
-    <label for="reason">請假事由：</label>
-    <textarea id="reason" name="reason" rows="3" required></textarea>
-
+    <input type="text" name="name" id="name" placeholder="姓名" required readonly>
+    <select name="type" required>
+      <option value="">請選擇請假類型</option>
+      <option value="事假">事假</option>
+      <option value="病假">病假</option>
+      <option value="特休">特休</option>
+    </select>
+    <input type="date" name="dateStart" required>
+    <input type="date" name="dateEnd" required>
+    <textarea name="reason" placeholder="請假原因" required></textarea>
     <button type="submit">送出</button>
   </form>
 
   <script>
-    const liffId = "2007824757-mvngBGAJ"; // ✅ 用你自己的 LIFF ID
-    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S_LnmWvyL82tRbzeCgT5201uMT7vUdnZa5nWLhSYtsxL94UGDInvYU7fkilvM3pd/exec"; // ✅ 改成你的部署網址
+    const liffId = "2007824757-mvngBGAJ";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S_LnmWvyL82tRbzeCgT5201uMT7vUdnZa5nWLhSYtsxL94UGDInvYU7fkilvM3pd/exec";
 
-    async function initializeLiff() {
+    async function main() {
+      await liff.init({ liffId });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
       try {
-        await liff.init({ liffId });
-
-        if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: location.href });
-          return;
-        }
-
         const profile = await liff.getProfile();
+        document.getElementById("userName").textContent = `👤 目前登入者：${profile.displayName}`;
         document.getElementById("name").value = profile.displayName;
-
-        document.getElementById("leaveForm").addEventListener("submit", function (e) {
-          e.preventDefault();
-
-          const formData = new FormData(this);
-          formData.append("userId", profile.userId);
-
-          fetch(scriptURL, {
-            method: "POST",
-            body: formData
-          })
-          .then(response => {
-            if (response.ok) {
-              alert("請假申請已送出！");
-              liff.closeWindow();
-            } else {
-              alert("送出失敗，請稍後再試。");
-            }
-          })
-          .catch(error => {
-            console.error("送出失敗:", error);
-            alert("發生錯誤，請稍後再試。");
-          });
-        });
-
-      } catch (error) {
-        console.error("LIFF 初始化失敗:", error);
-        alert("LIFF 初始化錯誤，請檢查網路連線或設定。");
+      } catch (err) {
+        document.getElementById("userName").textContent = "⚠️ 無法取得使用者資訊";
+        console.error(err);
       }
     }
 
-    initializeLiff();
+    document.getElementById("leaveForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(() => {
+          alert("已送出！");
+          liff.closeWindow();
+        })
+        .catch(err => {
+          alert("送出失敗！");
+          console.error(err);
+        });
+    });
+
+    main();
   </script>
 </body>
 </html>
