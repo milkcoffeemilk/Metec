@@ -2,14 +2,13 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>請假表單</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+    input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; box-sizing: border-box; }
     #userName { margin-bottom: 20px; font-weight: bold; color: green; }
-    #otherReasonText { display: none; }
   </style>
 </head>
 <body>
@@ -19,8 +18,8 @@
   <form id="leaveForm">
     <input type="text" name="name" id="name" placeholder="姓名" required readonly>
 
-    <select name="type" required>
-      <option value="">請選擇請假類型</option>
+    <select name="leaveType" id="leaveType" required>
+      <option value="">請選擇假別</option>
       <option value="年假">年假</option>
       <option value="事假">事假</option>
       <option value="病假">病假</option>
@@ -35,12 +34,10 @@
 
     <label>開始時間</label>
     <input type="datetime-local" name="dateStart" required>
-
     <label>結束時間</label>
     <input type="datetime-local" name="dateEnd" required>
 
-    <label>事由分類</label>
-    <select name="reasonOption" id="reasonOption" required>
+    <select name="reasonCategory" id="reasonCategory" required>
       <option value="">請選擇事由</option>
       <option value="辦理私事">辦理私事</option>
       <option value="休息">休息</option>
@@ -55,14 +52,14 @@
       <option value="其他">其他</option>
     </select>
 
-    <textarea id="otherReasonText" name="reasonText" placeholder="請輸入其他說明"></textarea>
+    <textarea name="reasonText" id="reasonText" placeholder="請輸入說明" style="display:none;"></textarea>
 
     <button type="submit">送出</button>
   </form>
 
   <script>
     const liffId = "2007824757-mvngBGAJ";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbw8DExa7dEV1C-6uxN2mV8eWDeXImHLeblDSPTyHri13_u2vUWufD3XJ0tpBisdwbGMgA/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbw3VMlwXiatIW_gC_wWVydQsH8oJaKt-RiJpsxyZgfsaiHVMcBRWcVMndYYS3YhkttZpQ/exec";
 
     async function main() {
       await liff.init({ liffId });
@@ -76,25 +73,28 @@
         const profile = await liff.getProfile();
         document.getElementById("userName").textContent = `👤 目前登入者：${profile.displayName}`;
         document.getElementById("name").value = profile.displayName;
-
-        // 將 userId 存起來
-        document.getElementById("leaveForm").dataset.userId = liff.getContext().userId || "N/A";
-
       } catch (err) {
         document.getElementById("userName").textContent = "⚠️ 無法取得使用者資訊";
         console.error(err);
       }
     }
 
-    document.getElementById("reasonOption").addEventListener("change", function() {
-      document.getElementById("otherReasonText").style.display =
-        this.value === "其他" ? "block" : "none";
+    document.getElementById("reasonCategory").addEventListener("change", function () {
+      const reasonText = document.getElementById("reasonText");
+      reasonText.style.display = this.value === "其他" ? "block" : "none";
     });
 
     document.getElementById("leaveForm").addEventListener("submit", e => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      formData.append("userId", document.getElementById("leaveForm").dataset.userId || "");
+      const form = e.target;
+      const formData = new FormData(form);
+
+      // 如果選了「其他」，就改 reasonCategory 的值為其他+內容
+      const reasonCategory = form.reasonCategory.value;
+      const reasonText = form.reasonText.value;
+      if (reasonCategory === "其他" && reasonText.trim() !== "") {
+        formData.set("reasonCategory", `其他：${reasonText}`);
+      }
 
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(() => {
