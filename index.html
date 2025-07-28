@@ -4,101 +4,59 @@
   <meta charset="utf-8">
   <title>請假表單</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
-    input, textarea, select, button {
-      display: block; width: 100%; margin-bottom: 1em; padding: 0.5em; font-size: 1em;
-    }
-    label { margin-top: 1em; display: block; font-weight: bold; }
-    .container { background: #fff; padding: 2em; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>請假申請</h2>
-    <form id="leaveForm">
-      <label for="name">姓名</label>
-      <input type="text" id="name" name="name" readonly>
+  <h2>請假表單</h2>
+  <form id="leaveForm">
+    <label>姓名：</label>
+    <input type="text" id="name" name="name" readonly><br><br>
 
-      <label for="reason">請假事由</label>
-      <textarea id="reason" name="reason" required></textarea>
+    <label>請假日期：</label>
+    <input type="date" name="date"><br><br>
 
-      <label for="date">請假日期</label>
-      <input type="date" id="date" name="date" required>
+    <label>請假事由：</label>
+    <textarea name="reason" rows="3" cols="30"></textarea><br><br>
 
-      <button type="submit">送出</button>
-    </form>
-    <p id="status"></p>
-  </div>
+    <button type="submit">送出</button>
+  </form>
 
   <script>
-    // Step 1: 初始化 LIFF
-    liff.init({ liffId: "2007824757-mvngBGAJ" }).then(() => {
+    const scriptURL = "https://script.google.com/macros/s/AKfycby3N_qQnVZYApMQbZy7UW2sDWFgFVD7d1if8gBem2hKYUN9YAzods2Al-c9GWAw6LqD1Q/exec";
+
+    async function main() {
+      await liff.init({ liffId: "2007824757-mvngBGAJ" });
+
       if (!liff.isLoggedIn()) {
-        liff.login(); // 自動導引使用者登入
-      } else {
-        // Step 2: 取得使用者名稱
-        liff.getProfile().then(profile => {
-          document.getElementById("name").value = profile.displayName;
-        });
+        liff.login();
+        return;
       }
-    }).catch(err => {
-      console.error("LIFF 初始化失敗:", err);
-    });
 
-    // Step 3: 表單送出事件
-    document.getElementById("leaveForm").addEventListener("submit", function (e) {
-      e.preventDefault();
+      const profile = await liff.getProfile();
+      document.getElementById("name").value = profile.displayName;
 
-      const name = document.getElementById("name").value;
-      const reason = document.getElementById("reason").value;
-      const date = document.getElementById("date").value;
+      document.getElementById("leaveForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.append("userId", profile.userId);
 
-      const data = {
-        name: name,
-        reason: reason,
-        date: date
-      };
-
-      // Step 4: 傳送資料到 Google Apps Script Web App
-      fetch("https://script.google.com/macros/s/AKfycby3N_qQnVZYApMQbZy7UW2sDWFgFVD7d1if8gBem2hKYUN9YAzods2Al-c9GWAw6LqD1Q/exec", {
-        method: "POST",
-        mode: "no-cors", // 因 GAS 沒回應 CORS header，故設定為 no-cors
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
-        document.getElementById("status").textContent = "送出成功！";
-        document.getElementById("leaveForm").reset();
-      })
-      .catch(err => {
-        console.error("送出失敗:", err);
-        document.getElementById("status").textContent = "送出失敗，請稍後再試。";
+        fetch(scriptURL, {
+          method: "POST",
+          body: formData,
+        })
+        .then(response => {
+          alert("已送出！");
+          liff.closeWindow(); // 可選擇性關閉 LIFF 視窗
+        })
+        .catch(error => {
+          console.error("錯誤:", error);
+          alert("送出失敗");
+        });
       });
+    }
+
+    main().catch(err => {
+      console.error("初始化失敗:", err);
     });
-
-
-liff.init({ liffId: "…" }).then(() => {
-  console.log("LIFF init succeeded:", location.href);
-  console.log("isLoggedIn:", liff.isLoggedIn());
-  if (!liff.isLoggedIn()) { 
-    console.log("trigger login");
-    liff.login(); 
-  } else {
-    console.log("已登入，accessToken:", liff.getAccessToken());
-  }
-}).catch(err => console.error("LIFF init failed:", err));
-
-
-
-
-
-
-
-
-
   </script>
 </body>
 </html>
