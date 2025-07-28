@@ -78,6 +78,27 @@
         document.getElementById("status").textContent = "送出失敗，請稍後再試。";
       });
     });
+
+
+liff.init({ liffId: "…" }).then(() => {
+  console.log("LIFF init succeeded:", location.href);
+  console.log("isLoggedIn:", liff.isLoggedIn());
+  if (!liff.isLoggedIn()) { 
+    console.log("trigger login");
+    liff.login(); 
+  } else {
+    console.log("已登入，accessToken:", liff.getAccessToken());
+  }
+}).catch(err => console.error("LIFF init failed:", err));
+
+
+
+
+
+
+
+
+
   </script>
 </body>
 </html>
