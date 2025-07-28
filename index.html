@@ -1,62 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <title>請假表單</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
-  <h2>請假表單</h2>
+  <h2>請假申請</h2>
   <form id="leaveForm">
-    <label>姓名：</label>
-    <input type="text" id="name" name="name" readonly><br><br>
+    <label for="name">姓名：</label>
+    <input type="text" id="name" name="name" readonly>
 
-    <label>請假日期：</label>
-    <input type="date" name="date"><br><br>
+    <label for="date">請假日期：</label>
+    <input type="date" id="date" name="date" required>
 
-    <label>請假事由：</label>
-    <textarea name="reason" rows="3" cols="30"></textarea><br><br>
+    <label for="reason">請假事由：</label>
+    <textarea id="reason" name="reason" rows="3" required></textarea>
 
     <button type="submit">送出</button>
   </form>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S_LnmWvyL82tRbzeCgT5201uMT7vUdnZa5nWLhSYtsxL94UGDInvYU7fkilvM3pd/exec";
+    const liffId = "2007824757-mvngBGAJ"; // ✅ 用你自己的 LIFF ID
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx_S_LnmWvyL82tRbzeCgT5201uMT7vUdnZa5nWLhSYtsxL94UGDInvYU7fkilvM3pd/exec"; // ✅ 改成你的部署網址
 
-    async function main() {
-      await liff.init({ liffId: "2007824757-mvngBGAJ" });
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId });
 
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: location.href });
+          return;
+        }
 
-      const profile = await liff.getProfile();
-      document.getElementById("name").value = profile.displayName;
+        const profile = await liff.getProfile();
+        document.getElementById("name").value = profile.displayName;
 
-      document.getElementById("leaveForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        formData.append("userId", profile.userId);
+        document.getElementById("leaveForm").addEventListener("submit", function (e) {
+          e.preventDefault();
 
-        fetch(scriptURL, {
-          method: "POST",
-          body: formData,
-        })
-        .then(response => {
-          alert("已送出！");
-          liff.closeWindow(); // 可選擇性關閉 LIFF 視窗
-        })
-        .catch(error => {
-          console.error("錯誤:", error);
-          alert("送出失敗");
+          const formData = new FormData(this);
+          formData.append("userId", profile.userId);
+
+          fetch(scriptURL, {
+            method: "POST",
+            body: formData
+          })
+          .then(response => {
+            if (response.ok) {
+              alert("請假申請已送出！");
+              liff.closeWindow();
+            } else {
+              alert("送出失敗，請稍後再試。");
+            }
+          })
+          .catch(error => {
+            console.error("送出失敗:", error);
+            alert("發生錯誤，請稍後再試。");
+          });
         });
-      });
+
+      } catch (error) {
+        console.error("LIFF 初始化失敗:", error);
+        alert("LIFF 初始化錯誤，請檢查網路連線或設定。");
+      }
     }
 
-    main().catch(err => {
-      console.error("初始化失敗:", err);
-    });
+    initializeLiff();
   </script>
 </body>
 </html>
