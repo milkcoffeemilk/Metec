@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>請假申請</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f0f4f8; }
+    label { display: block; margin-top: 12px; }
+    input, select, textarea, button {
+      width: 100%; padding: 8px; margin-top: 4px; border-radius: 5px;
+    }
+    button { background: #00c300; color: white; border: none; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h2>請假申請表單</h2>
+  <form id="leaveForm">
+    <label>請假類型
+      <select id="leaveType" required>
+        <option value="">請選擇</option>
+        <option value="事假">事假</option>
+        <option value="病假">病假</option>
+        <option value="特休">特休</option>
+        <option value="其他">其他</option>
+      </select>
+    </label>
+    <label>開始日期<input type="date" id="startDate" required></label>
+    <label>結束日期<input type="date" id="endDate" required></label>
+    <label>請假原因<textarea id="reason" rows="3" required></textarea></label>
+    <button type="submit">送出申請</button>
+  </form>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const scriptUrl = "https://script.google.com/macros/s/AKfycby3N_qQnVZYApMQbZy7UW2sDWFgFVD7d1if8gBem2hKYUN9YAzods2Al-c9GWAw6LqD1Q/exec";
+
+    async function main() {
+      await liff.init({ liffId: "2007824757-mvngBGAJ" });
+      const profile = await liff.getProfile();
+
+      const form = document.getElementById("leaveForm");
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const data = {
+          userId: profile.userId,
+          displayName: profile.displayName,
+          leaveType: document.getElementById("leaveType").value,
+          startDate: document.getElementById("startDate").value,
+          endDate: document.getElementById("endDate").value,
+          reason: document.getElementById("reason").value,
+        };
+
+        const response = await fetch(scriptUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.result === "success") {
+          alert("✅ 已成功送出申請！");
+          liff.closeWindow(); // 關閉 LIFF 視窗
+        } else {
+          alert("❌ 發生錯誤：" + result.message);
+        }
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
