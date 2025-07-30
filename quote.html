@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>報價回報表單</title>
+  <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background-color: #06c755;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>業務報價回報</h2>
+  <form id="quoteForm">
+    <label>客戶名稱</label>
+    <input type="text" id="customer" required>
+
+    <label>產品項目</label>
+    <input type="text" id="product" required>
+
+    <label>報價金額</label>
+    <input type="number" id="amount" required>
+
+    <label>報價說明</label>
+    <textarea id="description" rows="4"></textarea>
+
+    <input type="hidden" id="userName">
+    <input type="hidden" id="userId">
+
+    <button type="submit">送出報價</button>
+  </form>
+
+  <script>
+    const liffId = '2007824757-mvngBGAJ'; // 🔁 請替換為你的 LIFF ID
+
+    async function initLIFF() {
+      await liff.init({ liffId });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        document.getElementById("userName").value = profile.displayName;
+        document.getElementById("userId").value = profile.userId;
+      }
+    }
+
+    document.getElementById("quoteForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = {
+        customer: document.getElementById("customer").value,
+        product: document.getElementById("product").value,
+        amount: document.getElementById("amount").value,
+        description: document.getElementById("description").value,
+        userName: document.getElementById("userName").value,
+        userId: document.getElementById("userId").value,
+        timestamp: new Date().toISOString()
+      };
+
+      const response = await fetch("https://script.google.com/macros/s/AKfycbztVuE7W79IbZBqfzJdhEop5s_plV5um0D_YZb15vJkyhfgltMND_7QqXOAlpPHTFsExw/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+      alert("報價資訊已送出！");
+      liff.closeWindow();
+    });
+
+    initLIFF();
+  </script>
+</body>
+</html>
