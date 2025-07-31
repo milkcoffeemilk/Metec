@@ -1,108 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>報價表單</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>報價回報</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      font-size: 16px;
+      background: #f9f9f9;
+      color: #333;
     }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
     label {
       display: block;
-      margin-top: 10px;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
+      margin-top: 15px;
       font-size: 16px;
     }
-    button {
-      margin-top: 15px;
+
+    input, select, textarea, button {
+      width: 100%;
       padding: 10px;
       font-size: 16px;
-      width: 100%;
+      margin-top: 5px;
+      box-sizing: border-box;
     }
-    #username {
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .user-name {
+      margin-bottom: 20px;
       font-weight: bold;
       font-size: 18px;
-      margin-bottom: 20px;
+      color: #0066cc;
     }
   </style>
 </head>
 <body>
-  <div id="username">載入中...</div>
+
+  <div class="user-name" id="userName">載入使用者中...</div>
 
   <form id="quoteForm">
-    <label for="customer">客戶名稱</label>
-    <select id="customer" name="customer" required>
+    <label for="customer">客戶名稱：</label>
+    <select id="customer" name="customer">
       <option value="">載入中...</option>
     </select>
 
-    <label for="item">產品項目</label>
-    <input type="text" id="item" name="item" required>
+    <label for="product">產品名稱：</label>
+    <input type="text" id="product" name="product" required>
 
-    <label for="price">報價金額</label>
+    <label for="price">報價金額：</label>
     <input type="number" id="price" name="price" required>
 
-    <label for="note">備註</label>
+    <label for="note">備註：</label>
     <textarea id="note" name="note" rows="3"></textarea>
-
-    <input type="hidden" id="userId" name="userId">
-    <input type="hidden" id="userName" name="userName">
 
     <button type="submit">送出</button>
   </form>
 
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const GAS_POST_URL = 'https://script.google.com/macros/s/AKfycby-tXE8fm_ntTocuZBOH0mzachXmrh7JnxiRz7GfP2DK_W-1zUgKvmASActecFXjgBeRA/exec';
-    const CUSTOMER_LIST_API = 'https://script.google.com/macros/s/AKfycby-tXE8fm_ntTocuZBOH0mzachXmrh7JnxiRz7GfP2DK_W-1zUgKvmASActecFXjgBeRA/exec';
+    // ✅ 設定區（變數集中管理）
+    const LIFF_ID = "2007824757-xMAag5o7"; // ←請換成你的 LIFF ID
+    const GAS_URL_SUBMIT = "https://script.google.com/macros/s/AKfycby-tXE8fm_ntTocuZBOH0mzachXmrh7JnxiRz7GfP2DK_W-1zUgKvmASActecFXjgBeRA/exec";
+    const GAS_URL_CUSTOMERS = "https://script.google.com/macros/s/AKfycbwYbAWYtStJfoIqFeZXPStONhcGFUSdn3yWVzQpz3ppMrWVcodFYb9okCyMfKV_rKLq5Q/exec";
 
-    async function main() {
-      await liff.init({ liffId: "2007824757-xMAag5o7" });
+    let userId = "";
+    let displayName = "";
 
+    // ✅ 初始化 LIFF
+    async function initLiff() {
+      await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) {
         liff.login();
-        return;
+      } else {
+        const profile = await liff.getProfile();
+        displayName = profile.displayName;
+        userId = profile.userId;
+        document.getElementById("userName").textContent = `使用者：${displayName}`;
       }
-
-      const profile = await liff.getProfile();
-      document.getElementById("username").textContent = `登入者：${profile.displayName}`;
-      document.getElementById("userId").value = profile.userId;
-      document.getElementById("userName").value = profile.displayName;
-
-      // 載入客戶清單
-      const res = await fetch(CUSTOMER_LIST_API);
-      const customers = await res.json();
-      const select = document.getElementById("customer");
-      select.innerHTML = customers.map(name => `<option value="${name}">${name}</option>`).join("");
     }
 
+    // ✅ 載入客戶資料
+    async function loadCustomers() {
+      try {
+        const res = await fetch(GAS_URL_CUSTOMERS);
+        const data = await res.json();
+        const customerSelect = document.getElementById("customer");
+        customerSelect.innerHTML = '<option value="">請選擇</option>';
+        data.customers.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          customerSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("載入客戶失敗：", err);
+        document.getElementById("customer").innerHTML = '<option value="">載入失敗</option>';
+      }
+    }
+
+    // ✅ 表單送出
     document.getElementById("quoteForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const params = new URLSearchParams();
-      formData.forEach((value, key) => params.append(key, value));
+      formData.append("userId", userId);
+      formData.append("userName", displayName);
 
-      const res = await fetch(GAS_POST_URL, {
-        method: "POST",
-        body: params,
-      });
+      try {
+        const res = await fetch(GAS_URL_SUBMIT, {
+          method: "POST",
+          body: formData,
+        });
 
-      if (res.ok) {
-        alert("報價已送出");
-        document.getElementById("quoteForm").reset();
-      } else {
-        alert("送出失敗，請稍後再試");
+        const text = await res.text();
+        alert(text === "OK" ? "資料送出成功！" : "送出失敗：" + text);
+        e.target.reset();
+      } catch (err) {
+        alert("提交錯誤：" + err);
       }
     });
 
-    main();
+    // ✅ 主流程
+    window.addEventListener("DOMContentLoaded", async () => {
+      await initLiff();
+      await loadCustomers();
+    });
   </script>
 </body>
 </html>
