@@ -80,11 +80,11 @@
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
-        <label for="customerName" class="label-with-note">
-            <span>客戶名稱:</span>
-            <span class="note">(格式: 客戶代號-客戶名稱，例: 1234-ABC)</span>
-        </label>
-        <input type="text" name="customerName" id="customerName" placeholder="格式: 客戶代號-客戶名稱，例: 1234-ABC" required>
+        <label for="customerCode">客戶編號:</label>
+        <input type="text" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" required>
+
+        <label for="customerName">客戶名稱:</label>
+        <input type="text" name="customerName" id="customerName" placeholder="請輸入客戶名稱" required>
 
         <label for="sales">業務 (自動填入):</label>
         <input type="text" name="sales" id="sales" required readonly>
@@ -99,17 +99,18 @@
 
     <script>
         // 請替換成你的 LIFF ID
-        const liffId = "2007824757-jr3mR8G7"; // 例如: "2007824757-mvngBGAJ"
+        const liffId = "2007824757-jr3mR8G7"; 
 
         // 請替換成你的 GAS 部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbwHa-w8rZqiMmMjmU_c2z0-DTmA4GxPG_wfrDy6IUyyJqF6VxsGhSIMv7wmxvcKesIH3g/exec"; // 例如: "https://script.google.com/macros/s/AKfycbw3VMlwXiatIW_gC_wWVydQsH8oJaKt-RiJpsxyZgfsaiHVMcBRWcVMndYYS3YhkttZpQ/exec"
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwHa-w8rZqiMmMjmU_c2z0-DTmA4GxPG_wfrDy6IUyyJqF6VxsGhSIMv7wmxvcKesIH3g/exec"; 
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
         const recordDateInput = document.getElementById("recordDate");
         const customerForm = document.getElementById("customerForm");
-        const customerNameInput = document.getElementById("customerName"); // 新增客戶名稱欄位引用
-        const submitButton = document.getElementById("submitButton"); // 新增按鈕引用
+        const customerCodeInput = document.getElementById("customerCode"); // 新增客戶編號欄位引用
+        const customerNameInput = document.getElementById("customerName"); // 客戶名稱欄位引用
+        const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
 
         async function main() {
@@ -138,16 +139,13 @@
             }
         }
 
-        // 顯示狀態訊息 (新增 showClass 和 timeout 參數來控制顯示和隱藏)
         function showStatusMessage(message, type, autoHide = true, duration = 3000) {
             statusMessage.textContent = message;
-            statusMessage.className = `message ${type} show`; // 添加 show class
+            statusMessage.className = `message ${type} show`; 
             
             if (autoHide) {
                 setTimeout(() => {
-                    statusMessage.classList.remove("show"); // 移除 show class 觸發淡出
-                    // 如果需要，可以在淡出後真正隱藏元素
-                    // setTimeout(() => { statusMessage.style.display = "none"; }, 500); // 配合 CSS transition duration
+                    statusMessage.classList.remove("show"); 
                 }, duration);
             }
         }
@@ -164,27 +162,27 @@
             try {
                 const response = await fetch(scriptURL, {
                     method: 'POST',
-                    body: formData
+                    body: formData 
                 });
 
                 if (response.ok) {
                     showStatusMessage("✅ 客戶資料已成功送出！", "success");
+                    customerCodeInput.value = ""; // 清空客戶編號欄位
                     customerNameInput.value = ""; // 清空客戶名稱欄位
-                    customerNameInput.focus(); // 將焦點移回客戶名稱欄位
+                    customerCodeInput.focus(); // 將焦點移回客戶編號欄位
                 } else {
                     const errorText = await response.text();
-                    showStatusMessage(`❌ 送出失敗！錯誤: ${errorText}`, "error", false); // 失敗訊息不自動隱藏
+                    showStatusMessage(`❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
                     console.error("提交失敗的 HTTP 響應:", response.status, errorText);
                 }
             } catch (err) {
-                showStatusMessage("❌ 提交時發生錯誤，請檢查網路連線或 GAS 服務。", "error", false); // 錯誤訊息不自動隱藏
+                showStatusMessage("❌ 提交時發生錯誤，請檢查網路連線或 GAS 服務。", "error", false); 
                 console.error("Fetch 錯誤:", err);
             } finally {
-                // 無論成功或失敗，都在一段時間後啟用按鈕並恢復文字
                 setTimeout(() => {
                     submitButton.disabled = false;
                     submitButton.textContent = "送出資料";
-                }, 3000); // 延遲3秒後恢復按鈕狀態
+                }, 3000); 
             }
         });
 
