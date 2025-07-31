@@ -1,63 +1,67 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>報價填寫</title>
+  <meta charset="UTF-8">
+  <title>報價表單</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      font-size: 18px;
-    }
-    label, select, input, textarea {
-      display: block;
-      width: 100%;
-      margin-bottom: 15px;
       font-size: 16px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
       padding: 8px;
+      margin-top: 5px;
       box-sizing: border-box;
+      font-size: 16px;
     }
     button {
-      font-size: 18px;
+      margin-top: 15px;
       padding: 10px;
+      font-size: 16px;
       width: 100%;
     }
     #username {
       font-weight: bold;
+      font-size: 18px;
       margin-bottom: 20px;
-      color: #0066cc;
     }
   </style>
 </head>
 <body>
-  <div id="username">登入中...</div>
+  <div id="username">載入中...</div>
 
   <form id="quoteForm">
     <label for="customer">客戶名稱</label>
-    <select id="customer" name="customer">
-      <option>載入中...</option>
+    <select id="customer" name="customer" required>
+      <option value="">載入中...</option>
     </select>
 
-    <label for="product">產品名稱</label>
-    <input type="text" id="product" name="product" required />
+    <label for="item">產品項目</label>
+    <input type="text" id="item" name="item" required>
 
     <label for="price">報價金額</label>
-    <input type="number" id="price" name="price" required />
+    <input type="number" id="price" name="price" required>
 
     <label for="note">備註</label>
-    <textarea id="note" name="note" rows="4"></textarea>
+    <textarea id="note" name="note" rows="3"></textarea>
 
-    <button type="submit">送出報價</button>
+    <input type="hidden" id="userId" name="userId">
+    <input type="hidden" id="userName" name="userName">
+
+    <button type="submit">送出</button>
   </form>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const customerSelect = document.getElementById('customer');
-    const usernameDiv = document.getElementById('username');
-    let userId = '', userName = '';
+    const GAS_POST_URL = 'https://script.google.com/macros/s/AKfycby-tXE8fm_ntTocuZBOH0mzachXmrh7JnxiRz7GfP2DK_W-1zUgKvmASActecFXjgBeRA/exec';
+    const CUSTOMER_LIST_API = 'https://script.google.com/macros/s/AKfycby-tXE8fm_ntTocuZBOH0mzachXmrh7JnxiRz7GfP2DK_W-1zUgKvmASActecFXjgBeRA/exec';
 
     async function main() {
       await liff.init({ liffId: "2007824757-xMAag5o7" });
@@ -68,45 +72,34 @@
       }
 
       const profile = await liff.getProfile();
-      userId = profile.userId;
-      userName = profile.displayName;
-      usernameDiv.textContent = `登入者：${userName}`;
+      document.getElementById("username").textContent = `登入者：${profile.displayName}`;
+      document.getElementById("userId").value = profile.userId;
+      document.getElementById("userName").value = profile.displayName;
 
       // 載入客戶清單
-      fetch("https://script.google.com/macros/s/AKfycbzDOjBzYQR8Efx-aYHIC73zuRIiNcOjv990KaxkhI-QEKnJkgQIuwW5j0cBpUDrexkJ8Q/exec")
-        .then(res => res.json())
-        .then(data => {
-          customerSelect.innerHTML = '';
-          data.forEach(name => {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            customerSelect.appendChild(option);
-          });
-        });
+      const res = await fetch(CUSTOMER_LIST_API);
+      const customers = await res.json();
+      const select = document.getElementById("customer");
+      select.innerHTML = customers.map(name => `<option value="${name}">${name}</option>`).join("");
     }
 
-    document.getElementById("quoteForm").addEventListener("submit", function (e) {
+    document.getElementById("quoteForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      const formData = new FormData(e.target);
+      const params = new URLSearchParams();
+      formData.forEach((value, key) => params.append(key, value));
 
-      const data = {
-        customer: document.getElementById("customer").value,
-        product: document.getElementById("product").value,
-        price: document.getElementById("price").value,
-        note: document.getElementById("note").value,
-        userId: userId,
-        userName: userName
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycbzDOjBzYQR8Efx-aYHIC73zuRIiNcOjv990KaxkhI-QEKnJkgQIuwW5j0cBpUDrexkJ8Q/exec", {
+      const res = await fetch(GAS_POST_URL, {
         method: "POST",
-        body: new URLSearchParams(data)
-      })
-        .then(res => res.text())
-        .then(txt => {
-          alert("已送出報價！");
-          document.getElementById("quoteForm").reset();
-        });
+        body: params,
+      });
+
+      if (res.ok) {
+        alert("報價已送出");
+        document.getElementById("quoteForm").reset();
+      } else {
+        alert("送出失敗，請稍後再試");
+      }
     });
 
     main();
