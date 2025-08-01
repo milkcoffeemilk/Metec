@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料建檔</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script src="liff_utils.js"></script> <style>
-        /* CSS 保持不變，或根據需要調整 */
+    <script src="liff_utils.js"></script>
+    <style>
+        /* CSS 共通樣式 */
         body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #f4f7f6; color: #333; }
         h1 { text-align: center; color: #00b900; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input[type="text"], input[type="date"] {
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
             display: block;
             margin-bottom: 15px;
             width: calc(100% - 16px);
@@ -75,15 +77,15 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔v1.05</h1>
+    <h1>客戶資料建檔</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
         <label for="customerCode">客戶編號:</label>
-        <input type="text" name="customerCode" id="customerCode" placeholder="請輸入BC客戶編號" required>
+        <input type="number" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" min="10000" max="99999" step="1" required>
 
         <label for="customerName">客戶名稱:</label>
-        <input type="text" name="customerName" id="customerName" placeholder="請輸入BC客戶名稱" required>
+        <input type="text" name="customerName" id="customerName" placeholder="請輸入客戶名稱" required>
 
         <label for="sales">業務 (自動填入):</label>
         <input type="text" name="sales" id="sales" required readonly>
@@ -98,7 +100,7 @@
 
     <script>
         const liffId = "2007824757-R2rn6zYv"; 
-        const scriptURL = "https://script.google.com/macros/s/AKfycbyes8x2XqPWMPyGtdWLqQZ52PaakkjxGG35A-RKryHE7UCGssAhfJKVIUptejWdNS1F5g/exec"; // 注意這是客戶資料的 GAS URL
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwVTgNLJq1oEoMckd3UUdnph0olrQrCglG8IO3KzqMgSs4FWF9WvoGsXhtXVYKOKMtViA/exec"; 
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
@@ -111,31 +113,21 @@
 
         async function initPage() {
             try {
-                // 使用模組化的 initLiffAndGetProfile 函數
                 const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
-                
-                // 自動填入今天的日期 (這部分目前沒有抽象化，因為較為簡單且頁面特有)
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                recordDateInput.value = `${year}-${month}-${day}`;
+                recordDateInput.value = getTodayDateString();
 
             } catch (err) {
-                // initLiffAndGetProfile 已經處理了顯示訊息，這裡可以選擇是否再做額外處理
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("客戶頁面初始化錯誤:", err);
             }
         }
 
-        // 提交成功後的回呼函數
         function onCustomerSubmitSuccess() {
-            customerCodeInput.value = ""; // 清空客戶編號欄位
-            customerNameInput.value = ""; // 清空客戶名稱欄位
-            customerCodeInput.focus(); // 將焦點移回客戶編號欄位
+            customerCodeInput.value = ""; 
+            customerNameInput.value = ""; 
+            customerCodeInput.focus(); 
         }
 
-        // 監聽表單提交，並使用模組化的 handleFormSubmission 函數
         customerForm.addEventListener("submit", (e) => {
             e.preventDefault();
             handleFormSubmission(
