@@ -1,5 +1,3 @@
-// liff_utils.js
-
 /**
  * 初始化 LIFF 並獲取使用者個人資料。
  * @param {string} liffId - 你的 LIFF ID。
@@ -13,9 +11,7 @@ async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
 
         if (!liff.isLoggedIn()) {
             liff.login();
-            // LIFF Login 會導致頁面跳轉，所以這裡通常不需要額外的 return 或錯誤處理
-            // 因為頁面會重新載入，並從頭執行 main()
-            return Promise.reject("未登入，已導向 LIFF 登入頁面。"); 
+            return Promise.reject("未登入，已導向 LIFF 登入頁面。");
         }
 
         const profile = await liff.getProfile();
@@ -25,14 +21,14 @@ async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
         if (inputElement) {
             inputElement.value = profile.displayName;
         }
-        return profile; // 返回 profile 物件供頁面使用
+        return profile;
 
     } catch (err) {
         if (displayElement) {
             displayElement.textContent = "⚠️ 無法取得使用者資訊，請檢查 LIFF 設定或網路連線。";
         }
         console.error("LIFF 初始化或獲取資料錯誤:", err);
-        return Promise.reject(err); // 拒絕 Promise 以傳遞錯誤
+        return Promise.reject(err);
     }
 }
 
@@ -78,21 +74,33 @@ async function handleFormSubmission(formElement, submitButton, statusElement, sc
 
         if (response.ok) {
             showStatusMessage(statusElement, "✅ 資料已成功送出！", "success");
-            onSuccessCallback(); // 執行成功回呼
+            onSuccessCallback();
         } else {
             const errorText = await response.text();
             showStatusMessage(statusElement, `❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
             console.error("提交失敗的 HTTP 響應:", response.status, errorText);
-            onErrorCallback(errorText); // 執行失敗回呼
+            onErrorCallback(errorText);
         }
     } catch (err) {
         showStatusMessage(statusElement, "❌ 提交時發生錯誤，請檢查網路連線或服務。", "error", false); 
         console.error("Fetch 錯誤:", err);
-        onErrorCallback(err.message); // 執行失敗回呼
+        onErrorCallback(err.message);
     } finally {
         setTimeout(() => {
             submitButton.disabled = false;
             submitButton.textContent = "送出資料";
         }, 3000); 
     }
+}
+
+/**
+ * 獲取今天的日期，格式為 YYYY-MM-DD。
+ * @returns {string} - 當前日期字串。
+ */
+function getTodayDateString() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
