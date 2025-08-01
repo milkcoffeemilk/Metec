@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料建檔</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
+    <script src="liff_utils.js"></script> <style>
+        /* CSS 保持不變，或根據需要調整 */
         body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #f4f7f6; color: #333; }
         h1 { text-align: center; color: #00b900; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        .label-with-note { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5px;}
-        .note { font-size: 0.85em; color: #888; font-weight: normal;}
         input[type="text"], input[type="date"] {
             display: block;
             margin-bottom: 15px;
-            width: calc(100% - 16px); /* 考慮 padding */
+            width: calc(100% - 16px);
             padding: 10px;
             box-sizing: border-box;
             border: 1px solid #ccc;
@@ -28,7 +27,7 @@
         #salesNameDisplay {
             margin-bottom: 20px;
             font-weight: bold;
-            color: #007bff; /* 藍色 */
+            color: #007bff;
             text-align: center;
             font-size: 1.1em;
         }
@@ -42,12 +41,12 @@
             width: 100%;
             font-size: 18px;
             margin-top: 20px;
-            transition: background-color 0.3s ease; /* 添加過渡效果 */
+            transition: background-color 0.3s ease;
         }
-        button[type="submit"]:hover:not(:disabled) { /* 禁用時不響應 hover */
+        button[type="submit"]:hover:not(:disabled) {
             background-color: #009e00;
         }
-        button[type="submit"]:disabled { /* 禁用時的樣式 */
+        button[type="submit"]:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
@@ -56,10 +55,10 @@
             margin-top: 15px;
             padding: 10px;
             border-radius: 4px;
-            opacity: 0; /* 預設隱藏 */
-            transition: opacity 0.5s ease-in-out; /* 淡入淡出效果 */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
-        .message.show { /* 顯示時的 class */
+        .message.show {
             opacity: 1;
         }
         .message.success {
@@ -81,10 +80,10 @@
 
     <form id="customerForm">
         <label for="customerCode">客戶編號:</label>
-        <input type="text" name="customerCode" id="customerCode" placeholder="輸入BC客戶代碼" required>
+        <input type="text" name="customerCode" id="customerCode" placeholder="請輸入BC客戶編號" required>
 
         <label for="customerName">客戶名稱:</label>
-        <input type="text" name="customerName" id="customerName" placeholder="輸入BC客戶名稱" required>
+        <input type="text" name="customerName" id="customerName" placeholder="請輸入BC客戶名稱" required>
 
         <label for="sales">業務 (自動填入):</label>
         <input type="text" name="sales" id="sales" required readonly>
@@ -98,34 +97,24 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 請替換成你的 LIFF ID
         const liffId = "2007824757-jr3mR8G7"; 
-
-        // 請替換成你的 GAS 部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbw9z4TMszWmTp_14TbUqOferXh5cGduGOXLmwJ1rtp6t1DICvGg0bLdjbJ65aHGXdLGMg/exec"; 
+        const scriptURL = "https://script.google.com/macros/s/AKfycbywP2l8AmDwlsJBHldinKczL4naQGUOsZTil0CY2G6w0SnEeh5Ef9zWa7hCVNyW6eS6lw/exec"; // 注意這是客戶資料的 GAS URL
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
         const recordDateInput = document.getElementById("recordDate");
         const customerForm = document.getElementById("customerForm");
-        const customerCodeInput = document.getElementById("customerCode"); // 新增客戶編號欄位引用
-        const customerNameInput = document.getElementById("customerName"); // 客戶名稱欄位引用
-        const submitButton = document.getElementById("submitButton");
+        const customerCodeInput = document.getElementById("customerCode"); 
+        const customerNameInput = document.getElementById("customerName"); 
+        const submitButton = document.getElementById("submitButton"); 
         const statusMessage = document.getElementById("statusMessage");
 
-        async function main() {
+        async function initPage() {
             try {
-                await liff.init({ liffId: liffId });
-
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
-
-                const profile = await liff.getProfile();
-                salesNameDisplay.textContent = `👤 目前業務：${profile.displayName}`;
-                salesInput.value = profile.displayName;
-
+                // 使用模組化的 initLiffAndGetProfile 函數
+                const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
+                
+                // 自動填入今天的日期 (這部分目前沒有抽象化，因為較為簡單且頁面特有)
                 const today = new Date();
                 const year = today.getFullYear();
                 const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -133,60 +122,32 @@
                 recordDateInput.value = `${year}-${month}-${day}`;
 
             } catch (err) {
-                salesNameDisplay.textContent = "⚠️ 無法取得業務資訊，請檢查 LIFF 設定或網路連線。";
-                console.error("LIFF 錯誤:", err);
-                showStatusMessage("❌ 無法取得業務資訊，請稍後再試。", "error");
+                // initLiffAndGetProfile 已經處理了顯示訊息，這裡可以選擇是否再做額外處理
+                showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
+                console.error("客戶頁面初始化錯誤:", err);
             }
         }
 
-        function showStatusMessage(message, type, autoHide = true, duration = 3000) {
-            statusMessage.textContent = message;
-            statusMessage.className = `message ${type} show`; 
-            
-            if (autoHide) {
-                setTimeout(() => {
-                    statusMessage.classList.remove("show"); 
-                }, duration);
-            }
+        // 提交成功後的回呼函數
+        function onCustomerSubmitSuccess() {
+            customerCodeInput.value = ""; // 清空客戶編號欄位
+            customerNameInput.value = ""; // 清空客戶名稱欄位
+            customerCodeInput.focus(); // 將焦點移回客戶編號欄位
         }
 
-        customerForm.addEventListener("submit", async (e) => {
+        // 監聽表單提交，並使用模組化的 handleFormSubmission 函數
+        customerForm.addEventListener("submit", (e) => {
             e.preventDefault();
-
-            // 提交前禁用按鈕並改變樣式
-            submitButton.disabled = true;
-            submitButton.textContent = "資料送出中...";
-
-            const formData = new FormData(customerForm);
-
-            try {
-                const response = await fetch(scriptURL, {
-                    method: 'POST',
-                    body: formData 
-                });
-
-                if (response.ok) {
-                    showStatusMessage("✅ 客戶資料已成功送出！", "success");
-                    customerCodeInput.value = ""; // 清空客戶編號欄位
-                    customerNameInput.value = ""; // 清空客戶名稱欄位
-                    customerCodeInput.focus(); // 將焦點移回客戶編號欄位
-                } else {
-                    const errorText = await response.text();
-                    showStatusMessage(`❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
-                    console.error("提交失敗的 HTTP 響應:", response.status, errorText);
-                }
-            } catch (err) {
-                showStatusMessage("❌ 提交時發生錯誤，請檢查網路連線或 GAS 服務。", "error", false); 
-                console.error("Fetch 錯誤:", err);
-            } finally {
-                setTimeout(() => {
-                    submitButton.disabled = false;
-                    submitButton.textContent = "送出資料";
-                }, 3000); 
-            }
+            handleFormSubmission(
+                customerForm, 
+                submitButton, 
+                statusMessage, 
+                scriptURL, 
+                onCustomerSubmitSuccess
+            );
         });
 
-        main();
+        initPage();
     </script>
 </body>
 </html>
