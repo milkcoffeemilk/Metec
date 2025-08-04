@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.15</h1>
+    <h1>客戶資料建檔 V1.16</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -50,33 +50,20 @@
         const statusMessage = document.getElementById("statusMessage");
 
         // showStatusMessage 函數已移至 liff_utils.js
-        // getTodayDateString 函數也屬於共通函數，
-        // 在 liff_utils.js 中應包含其定義。
-        /**
-         * 獲取今天的日期，格式為 YYYY-MM-DD。
-         * @returns {string} - 當前日期字串。
-         */
-        function getTodayDateString() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
+        // getTodayDateString 函數已移至 liff_utils.js
         // initLiffAndGetProfile 函數已移至 liff_utils.js
-        // handleFormSubmission 函數也已移至 liff_utils.js
+        // handleFormSubmission 函數已移至 liff_utils.js
 
         // 頁面初始化函數
         async function initPage() {
             try {
                 // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
-                // getTodayDateString 函數也應該來自 liff_utils.js
+                // 直接呼叫 liff_utils.js 中的 getTodayDateString
                 recordDateInput.value = getTodayDateString();
 
             } catch (err) {
-                // 這裡的 showStatusMessage 應該也是來自 liff_utils.js
+                // 直接呼叫 liff_utils.js 中的 showStatusMessage
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("客戶頁面初始化錯誤:", err);
             }
