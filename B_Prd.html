@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>產品維護頁面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- 引入共通 CSS 樣式 -->
+    <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入共通 JavaScript 函數 -->
+    <script src="liff_utils.js"></script>
+</head>
+<body>
+
+    <h1>產品維護 V1.0</h1>
+    <div id="operatorNameDisplay">🔄 載入操作者資訊...</div>
+
+    <form id="productForm">
+        <label for="productCode">產品編號:</label>
+        <input type="number" name="productCode" id="productCode" placeholder="請輸入產品編號" min="1000000" max="9999999" step="1" required>
+
+        <label for="productName">產品名稱:</label>
+        <input type="text" name="productName" id="productName" placeholder="請輸入產品名稱" required>
+
+        <label for="operator">操作者 (自動填入):</label>
+        <input type="text" name="operator" id="operator" required readonly>
+
+        <label for="recordDate">維護日期:</label>
+        <input type="date" name="recordDate" id="recordDate" required>
+
+        <button type="submit" id="submitButton">送出資料</button>
+    </form>
+
+    <div id="statusMessage" class="message"></div>
+
+    <script>
+        // 請替換成你的 LIFF ID (與客戶資料頁面共用或獨立)
+        const liffId = "2007824757-mOkx2arK"; 
+        // 請替換成你的產品資料GAS專案部署網址
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzkp6jY_C9-7GcfDZNIRrUjhvx6G3o_7l_oOewtfBvmCjxlAuyXcxo73y1VxSCn2Nl_qQ/exec"; 
+
+        const operatorNameDisplay = document.getElementById("operatorNameDisplay");
+        const operatorInput = document.getElementById("operator");
+        const recordDateInput = document.getElementById("recordDate");
+        const productForm = document.getElementById("productForm");
+        const productCodeInput = document.getElementById("productCode");
+        const productNameInput = document.getElementById("productName");
+        // salesPriceInput 已移除
+        // stockQuantityInput 已移除
+        const submitButton = document.getElementById("submitButton");
+        const statusMessage = document.getElementById("statusMessage");
+
+        // 頁面初始化函數
+        async function initPage() {
+            try {
+                // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
+                // 注意：這裡的 displayElement 和 inputElement 變數名與 liff_utils.js 中的參數名匹配
+                await initLiffAndGetProfile(liffId, operatorNameDisplay, operatorInput);
+                // 直接呼叫 liff_utils.js 中的 getTodayDateString
+                recordDateInput.value = getTodayDateString();
+
+            } catch (err) {
+                // 直接呼叫 liff_utils.js 中的 showStatusMessage
+                showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
+                console.error("產品頁面初始化錯誤:", err);
+            }
+        }
+
+        // 提交成功後的回呼函數
+        function onProductSubmitSuccess() {
+            productCodeInput.value = "";
+            productNameInput.value = "";
+            // salesPriceInput 已移除
+            // stockQuantityInput 已移除
+            productCodeInput.focus(); 
+        }
+
+        // 監聽表單提交事件
+        productForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            // 直接呼叫 liff_utils.js 中的 handleFormSubmission
+            handleFormSubmission(
+                productForm, 
+                submitButton, 
+                statusMessage, 
+                scriptURL, 
+                onProductSubmitSuccess
+            );
+        });
+
+        // 啟動頁面初始化
+        initPage();
+    </script>
+</body>
+</html>
