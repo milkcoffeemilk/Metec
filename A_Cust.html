@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.14</h1>
+    <h1>客戶資料建檔 V1.15</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -49,28 +49,9 @@
         const submitButton = document.getElementById("submitButton"); 
         const statusMessage = document.getElementById("statusMessage");
 
-        // showStatusMessage 和 getTodayDateString 函數也屬於共通函數，
-        // 在 liff_utils.js 中也應包含它們的定義。
-        // 為確保此單一檔案版仍可運作，暫時保留，但最終應移除。
-        /**
-         * 顯示狀態訊息。
-         * @param {HTMLElement} statusElement - 顯示訊息的 DOM 元素。
-         * @param {string} message - 要顯示的訊息文字。
-         * @param {string} type - 訊息類型 ('success' 或 'error')。
-         * @param {boolean} [autoHide=true] - 訊息是否自動隱藏。
-         * @param {number} [duration=3000] - 訊息自動隱藏的持續時間 (毫秒)。
-         */
-        function showStatusMessage(statusElement, message, type, autoHide = true, duration = 3000) {
-            statusElement.textContent = message;
-            statusElement.className = `message ${type} show`; 
-            
-            if (autoHide) {
-                setTimeout(() => {
-                    statusElement.classList.remove("show"); 
-                }, duration);
-            }
-        }
-
+        // showStatusMessage 函數已移至 liff_utils.js
+        // getTodayDateString 函數也屬於共通函數，
+        // 在 liff_utils.js 中應包含其定義。
         /**
          * 獲取今天的日期，格式為 YYYY-MM-DD。
          * @returns {string} - 當前日期字串。
@@ -91,6 +72,7 @@
             try {
                 // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
+                // getTodayDateString 函數也應該來自 liff_utils.js
                 recordDateInput.value = getTodayDateString();
 
             } catch (err) {
