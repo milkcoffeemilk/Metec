@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>報價維護頁面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- 引入共通 CSS 樣式 -->
+    <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入共通 JavaScript 函數 -->
+    <script src="liff_utils.js"></script>
+</head>
+<body>
+
+    <h1>報價維護 V1.1</h1>
+    <div id="salesNameDisplay">🔄 載入業務資訊...</div>
+
+    <form id="quoteForm">
+        <label for="customer">客戶:</label>
+        <select name="customer" id="customer" required class="w-full p-2 border rounded-md mb-4">
+            <option value="">載入中...</option>
+        </select>
+
+        <label for="product">產品:</label>
+        <select name="product" id="product" required class="w-full p-2 border rounded-md mb-4">
+            <option value="">載入中...</option>
+        </select>
+
+        <label for="quoteDate">報價日期:</label>
+        <input type="date" name="quoteDate" id="quoteDate" required class="w-full p-2 border rounded-md mb-4">
+
+        <label for="sales">業務 (自動填入):</label>
+        <input type="text" name="sales" id="sales" required readonly class="w-full p-2 border rounded-md mb-4 bg-gray-100 cursor-not-allowed">
+
+        <label for="description">說明:</label>
+        <textarea name="description" id="description" placeholder="請輸入報價說明 (可選)" rows="4" class="w-full p-2 border rounded-md mb-4"></textarea>
+
+        <button type="submit" id="submitButton" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md transition duration-300 ease-in-out">送出資料</button>
+    </form>
+
+    <div id="statusMessage" class="message"></div>
+
+    <script>
+        // 請替換成你的 LIFF ID (與其他頁面共用或獨立)
+        const liffId = "2007824757-xMAag5o7"; 
+        // 請替換成你的報價資料GAS專案部署網址
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz5nL5uqjCJDcoOPFn1mD6fDLwSk2V5e9JCXAG9UokkXUed-msJZjONH4MoPTDlKg55zw/exec"; 
+        // doGet 請求的 GAS 部署網址，通常與 doPost 相同
+        const gasDataFetchURL = scriptURL; 
+
+        const salesNameDisplay = document.getElementById("salesNameDisplay");
+        const salesInput = document.getElementById("sales");
+        const quoteDateInput = document.getElementById("quoteDate");
+        const customerSelect = document.getElementById("customer");
+        const productSelect = document.getElementById("product");
+        const quoteForm = document.getElementById("quoteForm");
+        const submitButton = document.getElementById("submitButton");
+        const statusMessage = document.getElementById("statusMessage");
+
+        let currentSalesDisplayName = ""; // 用於儲存當前業務的 LINE 顯示名稱，以便篩選客戶
+
+        /**
+         * 從 GAS 獲取下拉選單資料。
+         */
+        async function fetchDropdownData() {
+            try {
+                // 獲取客戶資料 (根據當前業務篩選)
+                const customerResponse = await fetch(`${gasDataFetchURL}?action=getCustomersForQuote&sales=${encodeURIComponent(currentSalesDisplayName)}`);
+                const customerData = await customerResponse.json();
+                
+                customerSelect.innerHTML = '<option value="">請選擇客戶</option>'; // 清空並添加預設選項
+                if (customerData.customers && customerData.customers.length > 0) {
+                    customerData.customers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer;
+                        option.textContent = customer;
+                        customerSelect.appendChild(option);
+                    });
+                } else {
+                    customerSelect.innerHTML = '<option value="">無可用客戶資料</option>';
+                }
+
+                // 獲取產品資料
+                const productResponse = await fetch(`${gasDataFetchURL}?action=getProductsForQuote`);
+                const productData = await productResponse.json();
+                
+                productSelect.innerHTML = '<option value="">請選擇產品</option>'; // 清空並添加預設選項
+                if (productData.products && productData.products.length > 0) {
+                    productData.products.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product;
+                        option.textContent = product;
+                        productSelect.appendChild(option);
+                    });
+                } else {
+                    productSelect.innerHTML = '<option value="">無可用產品資料</option>';
+                }
+
+            } catch (error) {
+                console.error("獲取下拉選單資料失敗:", error);
+                showStatusMessage(statusMessage, "❌ 無法載入下拉選單資料。", "error", false);
+                customerSelect.innerHTML = '<option value="">載入失敗</option>';
+                productSelect.innerHTML = '<option value="">載入失敗</option>';
+            }
+        }
+
+        // 頁面初始化函數
+        async function initPage() {
+            try {
+                // 初始化 LIFF 並獲取使用者資料
+                const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
+                currentSalesDisplayName = profile.displayName; // 儲存業務名稱
+                
+                // 自動填入今天的日期
+                quoteDateInput.value = getTodayDateString();
+                
+                // 獲取下拉選單資料
+                await fetchDropdownData(); 
+
+            } catch (err) {
+                showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
+                console.error("報價頁面初始化錯誤:", err);
+            }
+        }
+
+        // 提交成功後的回呼函數
+        function onQuoteSubmitSuccess() {
+            quoteForm.reset(); // 清空所有欄位
+            quoteDateInput.value = getTodayDateString(); // 重新設定日期
+            // 下拉選單會自動回到預設選項，但為了確保一致性，可以明確設定
+            customerSelect.value = ""; 
+            productSelect.value = "";
+            customerSelect.focus(); // 將焦點移回客戶下拉選單
+        }
+
+        // 監聽表單提交事件
+        quoteForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            handleFormSubmission(
+                quoteForm, 
+                submitButton, 
+                statusMessage, 
+                scriptURL, 
+                onQuoteSubmitSuccess
+            );
+        });
+
+        // 啟動頁面初始化
+        initPage();
+    </script>
+</body>
+</html>
