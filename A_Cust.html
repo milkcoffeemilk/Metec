@@ -8,6 +8,8 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入共通 JavaScript 函數 -->
+    <script src="liff_utils.js"></script>
 </head>
 <body>
 
@@ -47,6 +49,9 @@
         const submitButton = document.getElementById("submitButton"); 
         const statusMessage = document.getElementById("statusMessage");
 
+        // showStatusMessage 和 getTodayDateString 函數也屬於共通函數，
+        // 在 liff_utils.js 中也應包含它們的定義。
+        // 為確保此單一檔案版仍可運作，暫時保留，但最終應移除。
         /**
          * 顯示狀態訊息。
          * @param {HTMLElement} statusElement - 顯示訊息的 DOM 元素。
@@ -78,89 +83,18 @@
             return `${year}-${month}-${day}`;
         }
 
-        /**
-         * 初始化 LIFF 並獲取使用者個人資料。
-         * @param {string} liffId - 你的 LIFF ID。
-         * @param {HTMLElement} displayElement - 用於顯示使用者名稱的 DOM 元素。
-         * @param {HTMLElement} inputElement - 用於自動填入使用者名稱的 input 元素。
-         * @returns {Promise<Object>} - 成功則返回 Promise 包裹的 profile 物件，失敗則拒絕 Promise。
-         */
-        async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
-            try {
-                await liff.init({ liffId: liffId });
-
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return Promise.reject("未登入，已導向 LIFF 登入頁面。");
-                }
-
-                const profile = await liff.getProfile();
-                if (displayElement) {
-                    displayElement.textContent = `👤 目前登入者：${profile.displayName}`;
-                }
-                if (inputElement) {
-                    inputElement.value = profile.displayName;
-                }
-                return profile;
-
-            } catch (err) {
-                if (displayElement) {
-                    displayElement.textContent = "⚠️ 無法取得使用者資訊，請檢查 LIFF 設定或網路連線。";
-                }
-                console.error("LIFF 初始化或獲取資料錯誤:", err);
-                return Promise.reject(err);
-            }
-        }
-
-        /**
-         * 處理表單提交的核心邏輯。
-         * @param {HTMLFormElement} formElement - 要處理的表單 DOM 元素。
-         * @param {HTMLElement} submitButton - 提交按鈕 DOM 元素。
-         * @param {HTMLElement} statusElement - 顯示狀態訊息的 DOM 元素。
-         * @param {string} scriptURL - Google Apps Script 的部署 URL。
-         * @param {Function} [onSuccessCallback] - 提交成功後執行的回呼函數 (可選)。
-         * @param {Function} [onErrorCallback] - 提交失敗後執行的回呼函數 (可選)。
-         */
-        async function handleFormSubmission(formElement, submitButton, statusElement, scriptURL, onSuccessCallback = () => {}, onErrorCallback = () => {}) {
-            submitButton.disabled = true;
-            submitButton.textContent = "資料送出中...";
-
-            const formData = new FormData(formElement);
-
-            try {
-                const response = await fetch(scriptURL, {
-                    method: 'POST',
-                    body: formData 
-                });
-
-                if (response.ok) {
-                    showStatusMessage(statusElement, "✅ 資料已成功送出！", "success");
-                    onSuccessCallback();
-                } else {
-                    const errorText = await response.text();
-                    showStatusMessage(statusElement, `❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
-                    console.error("提交失敗的 HTTP 響應:", response.status, errorText);
-                    onErrorCallback(errorText);
-                }
-            } catch (err) {
-                showStatusMessage(statusElement, "❌ 提交時發生錯誤，請檢查網路連線或服務。", "error", false); 
-                console.error("Fetch 錯誤:", err);
-                onErrorCallback(err.message);
-            } finally {
-                setTimeout(() => {
-                    submitButton.disabled = false;
-                    submitButton.textContent = "送出資料";
-                }, 3000); 
-            }
-        }
+        // initLiffAndGetProfile 函數已移至 liff_utils.js
+        // handleFormSubmission 函數也已移至 liff_utils.js
 
         // 頁面初始化函數
         async function initPage() {
             try {
+                // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
                 recordDateInput.value = getTodayDateString();
 
             } catch (err) {
+                // 這裡的 showStatusMessage 應該也是來自 liff_utils.js
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("客戶頁面初始化錯誤:", err);
             }
@@ -176,6 +110,7 @@
         // 監聽表單提交事件
         customerForm.addEventListener("submit", (e) => {
             e.preventDefault();
+            // 直接呼叫 liff_utils.js 中的 handleFormSubmission
             handleFormSubmission(
                 customerForm, 
                 submitButton, 
