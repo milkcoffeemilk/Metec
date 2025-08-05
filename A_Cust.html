@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.17</h1>
+    <h1>客戶資料建檔 V1.18</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -37,8 +37,8 @@
     <script>
         // 請替換成你的 LIFF ID
         const liffId = "2007824757-R2rn6zYv"; 
-        // 請替換成你的客戶資料GAS專案部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; 
+        // 請替換成你的統一GAS專案部署網址
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; // <-- 這裡應該是您整合後的單一GAS部署網址
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
@@ -48,11 +48,6 @@
         const customerNameInput = document.getElementById("customerName"); 
         const submitButton = document.getElementById("submitButton"); 
         const statusMessage = document.getElementById("statusMessage");
-
-        // showStatusMessage 函數已移至 liff_utils.js
-        // getTodayDateString 函數已移至 liff_utils.js
-        // initLiffAndGetProfile 函數已移至 liff_utils.js
-        // handleFormSubmission 函數已移至 liff_utils.js
 
         // 頁面初始化函數
         async function initPage() {
@@ -78,15 +73,15 @@
 
         // 監聽表單提交事件
         customerForm.addEventListener("submit", (e) => {
-            formData.append('action', 'submitCustomerData');
             e.preventDefault();
             // 直接呼叫 liff_utils.js 中的 handleFormSubmission
+            // 注意：這裡需要傳遞 'submitCustomerData' 作為 action 參數
             handleFormSubmission(
                 customerForm, 
                 submitButton, 
                 statusMessage, 
                 scriptURL, 
-                action,
+                "submitCustomerData", // <-- 新增 action 參數
                 onCustomerSubmitSuccess
             );
         });
