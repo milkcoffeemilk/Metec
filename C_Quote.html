@@ -14,7 +14,7 @@
 </head>
 <body>
 
-    <h1>報價維護 V1.05</h1>
+    <h1>報價維護 V1.07</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
@@ -43,10 +43,10 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 【修正點】將所有 DOM 元素變數宣告移到最上方
+        // 將所有 DOM 元素變數宣告移到最上方
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
-        const quoteDateInput = document.getElementById("quoteDate");
+        const quoteDateInput = document.getElementById("quoteDate"); // 正確的變數名稱
         const customerSelect = document.getElementById("customer");
         const productSelect = document.getElementById("product");
         const quoteForm = document.getElementById("quoteForm");
@@ -115,7 +115,7 @@
                 currentSalesDisplayName = profile.displayName; // 儲存業務名稱
                 
                 // 自動填入今天的日期
-                recordDateInput.value = getTodayDateString(); // 現在 recordDateInput 應該已經定義了
+                quoteDateInput.value = getTodayDateString(); // 【修正點】使用正確的變數名稱
                 
                 // 獲取下拉選單資料
                 await fetchDropdownData(); 
@@ -130,7 +130,7 @@
         // 提交成功後的回呼函數
         function onQuoteSubmitSuccess() {
             quoteForm.reset(); // 清空所有欄位
-            recordDateInput.value = getTodayDateString(); // 重新設定日期
+            quoteDateInput.value = getTodayDateString(); // 重新設定日期
             // 下拉選單會自動回到預設選項，但為了確保一致性，可以明確設定
             customerSelect.value = ""; 
             productSelect.value = "";
