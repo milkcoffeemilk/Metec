@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料建檔</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入預編譯的 Tailwind CSS 檔案，取代 JIT CDN 腳本 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
@@ -13,7 +14,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.18</h1>
+    <h1>客戶資料建檔 V1.19</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -38,7 +39,7 @@
         // 請替換成你的 LIFF ID
         const liffId = "2007824757-R2rn6zYv"; 
         // 請替換成你的統一GAS專案部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; // <-- 這裡應該是您整合後的單一GAS部署網址
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; 
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
