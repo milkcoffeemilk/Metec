@@ -16,7 +16,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.20</h1>
+    <h1>客戶資料建檔 V1.12</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -38,10 +38,10 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 請替換成你的 LIFF ID
+        // 請替換成你的 LIFF ID (這必須是您在 LINE Developers Console 中為此 LIFF App 設定的 LIFF ID)
         const liffId = "2007824757-R2rn6zYv"; 
-        // 請替換成你的統一GAS專案部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; 
+        // 請替換成你的統一GAS專案部署網址 (這必須是您整合後的單一 GAS 專案部署網址)
+        const scriptURL = "https://script.google.com/macros/s/AKfycby-W7iOgeK0q5gXygQmHdR3OO1e7xyw2v6EoeWPcNAzMMNVSOfPTCKw7l6j0N63NqIROg/exec"; 
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
@@ -56,6 +56,7 @@
         async function initPage() {
             try {
                 // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
+                // 錯誤訊息 "liffId is necessary" 來自這裡的 liff.init()
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
                 // 直接呼叫 liff_utils.js 中的 getTodayDateString
                 recordDateInput.value = getTodayDateString();
