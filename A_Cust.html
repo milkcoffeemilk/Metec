@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料建檔</title>
-    <!-- 引入預編譯的 Tailwind CSS 檔案，取代 JIT CDN 腳本 -->
+    <!-- 確保這裡只有這行用於 Tailwind CSS，沒有 <script src="https://cdn.tailwindcss.com"></script> -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
     <!-- 引入共通 JavaScript 函數 -->
@@ -14,7 +16,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.19</h1>
+    <h1>客戶資料建檔 V1.20</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
