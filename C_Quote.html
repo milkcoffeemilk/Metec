@@ -14,7 +14,7 @@
 </head>
 <body>
 
-    <h1>報價維護 V1.13</h1>
+    <h1>報價維護 V1.05</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
@@ -43,12 +43,7 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 請替換成你的 LIFF ID (與其他頁面共用或獨立)
-        const liffId = "2007824757-xMAag5o7"; 
-        // 請替換成你的統一GAS專案部署網址 (doPost 和 doGet 都使用這個 URL)
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
-        const gasDataFetchURL = scriptURL; // doGet 請求的 GAS 部署網址，通常與 scriptURL 相同
-
+        // 【修正點】將所有 DOM 元素變數宣告移到最上方
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
         const quoteDateInput = document.getElementById("quoteDate");
@@ -57,6 +52,12 @@
         const quoteForm = document.getElementById("quoteForm");
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
+
+        // 請替換成你的 LIFF ID (與其他頁面共用或獨立)
+        const liffId = "2007824757-xMAag5o7"; 
+        // 請替換成你的統一GAS專案部署網址 (doPost 和 doGet 都使用這個 URL)
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
+        const gasDataFetchURL = scriptURL; // doGet 請求的 GAS 部署網址，通常與 scriptURL 相同
 
         let currentSalesDisplayName = ""; // 用於儲存當前業務的 LINE 顯示名稱，以便篩選客戶
 
@@ -114,7 +115,7 @@
                 currentSalesDisplayName = profile.displayName; // 儲存業務名稱
                 
                 // 自動填入今天的日期
-                recordDateInput.value = getTodayDateString();
+                recordDateInput.value = getTodayDateString(); // 現在 recordDateInput 應該已經定義了
                 
                 // 獲取下拉選單資料
                 await fetchDropdownData(); 
