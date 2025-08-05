@@ -13,7 +13,7 @@
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.16</h1>
+    <h1>客戶資料建檔 V1.17</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
@@ -78,6 +78,7 @@
 
         // 監聽表單提交事件
         customerForm.addEventListener("submit", (e) => {
+            formData.append('action', 'submitCustomerData');
             e.preventDefault();
             // 直接呼叫 liff_utils.js 中的 handleFormSubmission
             handleFormSubmission(
@@ -85,6 +86,7 @@
                 submitButton, 
                 statusMessage, 
                 scriptURL, 
+                action,
                 onCustomerSubmitSuccess
             );
         });
