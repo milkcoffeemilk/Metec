@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>報價維護頁面</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入預編譯的 Tailwind CSS 檔案 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
@@ -13,7 +14,7 @@
 </head>
 <body>
 
-    <h1>報價維護 V1.11</h1>
+    <h1>報價維護 V1.0</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
@@ -44,12 +45,9 @@
     <script>
         // 請替換成你的 LIFF ID (與其他頁面共用或獨立)
         const liffId = "2007824757-xMAag5o7"; 
-        // 請替換成你的報價資料GAS專案部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxPQct0KHl5_LbvUQ4GmVqqIQ-I98ep0O2NEYh9t1b-DqAVzVsuP9yHHFf1Af9PXqFpvw/exec"; 
-
-        
-        // doGet 請求的 GAS 部署網址，通常與 doPost 相同
-        const gasDataFetchURL = scriptURL; 
+        // 請替換成你的統一GAS專案部署網址 (doPost 和 doGet 都使用這個 URL)
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
+        const gasDataFetchURL = scriptURL; // doGet 請求的 GAS 部署網址，通常與 scriptURL 相同
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
@@ -101,6 +99,7 @@
 
             } catch (error) {
                 console.error("獲取下拉選單資料失敗:", error);
+                // 使用共通的 showStatusMessage 函數
                 showStatusMessage(statusMessage, "❌ 無法載入下拉選單資料。", "error", false);
                 customerSelect.innerHTML = '<option value="">載入失敗</option>';
                 productSelect.innerHTML = '<option value="">載入失敗</option>';
@@ -115,12 +114,13 @@
                 currentSalesDisplayName = profile.displayName; // 儲存業務名稱
                 
                 // 自動填入今天的日期
-                quoteDateInput.value = getTodayDateString();
+                recordDateInput.value = getTodayDateString();
                 
                 // 獲取下拉選單資料
                 await fetchDropdownData(); 
 
             } catch (err) {
+                // 使用共通的 showStatusMessage 函數
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("報價頁面初始化錯誤:", err);
             }
@@ -129,7 +129,7 @@
         // 提交成功後的回呼函數
         function onQuoteSubmitSuccess() {
             quoteForm.reset(); // 清空所有欄位
-            quoteDateInput.value = getTodayDateString(); // 重新設定日期
+            recordDateInput.value = getTodayDateString(); // 重新設定日期
             // 下拉選單會自動回到預設選項，但為了確保一致性，可以明確設定
             customerSelect.value = ""; 
             productSelect.value = "";
@@ -144,6 +144,7 @@
                 submitButton, 
                 statusMessage, 
                 scriptURL, 
+                "submitQuoteData", // <-- 新增 action 參數
                 onQuoteSubmitSuccess
             );
         });
