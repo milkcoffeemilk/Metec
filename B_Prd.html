@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>產品維護頁面</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入預編譯的 Tailwind CSS 檔案 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
@@ -13,7 +14,7 @@
 </head>
 <body>
 
-    <h1>產品維護 V1.01</h1>
+    <h1>產品維護 V1.0</h1>
     <div id="operatorNameDisplay">🔄 載入操作者資訊...</div>
 
     <form id="productForm">
@@ -22,6 +23,9 @@
 
         <label for="productName">產品名稱:</label>
         <input type="text" name="productName" id="productName" placeholder="請輸入產品名稱" required>
+
+        <!-- 銷售價格欄位已移除 -->
+        <!-- 庫存數量欄位已移除 -->
 
         <label for="operator">操作者 (自動填入):</label>
         <input type="text" name="operator" id="operator" required readonly>
@@ -37,7 +41,7 @@
     <script>
         // 請替換成你的 LIFF ID (與客戶資料頁面共用或獨立)
         const liffId = "2007824757-mOkx2arK"; 
-        // 請替換成你的產品資料GAS專案部署網址
+        // 請替換成你的統一GAS專案部署網址
         const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
 
         const operatorNameDisplay = document.getElementById("operatorNameDisplay");
@@ -46,8 +50,7 @@
         const productForm = document.getElementById("productForm");
         const productCodeInput = document.getElementById("productCode");
         const productNameInput = document.getElementById("productName");
-        // salesPriceInput 已移除
-        // stockQuantityInput 已移除
+        // salesPriceInput 和 stockQuantityInput 已移除
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
 
@@ -71,8 +74,6 @@
         function onProductSubmitSuccess() {
             productCodeInput.value = "";
             productNameInput.value = "";
-            // salesPriceInput 已移除
-            // stockQuantityInput 已移除
             productCodeInput.focus(); 
         }
 
@@ -80,11 +81,13 @@
         productForm.addEventListener("submit", (e) => {
             e.preventDefault();
             // 直接呼叫 liff_utils.js 中的 handleFormSubmission
+            // 注意：這裡需要傳遞 'submitProductData' 作為 action 參數
             handleFormSubmission(
                 productForm, 
                 submitButton, 
                 statusMessage, 
                 scriptURL, 
+                "submitProductData", // <-- 新增 action 參數
                 onProductSubmitSuccess
             );
         });
