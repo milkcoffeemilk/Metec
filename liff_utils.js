@@ -1,107 +1,113 @@
-            /**
-             * 初始化 LIFF 並獲取使用者個人資料。
-             * @param {string} liffId - 你的 LIFF ID。
-             * @param {HTMLElement} displayElement - 用於顯示使用者名稱的 DOM 元素。
-             * @param {HTMLElement} inputElement - 用於自動填入使用者名稱的 input 元素。
-             * @returns {Promise<Object>} - 成功則返回 Promise 包裹的 profile 物件，失敗則拒絕 Promise。
-             */
-            function initLiffAndGetProfile(liffId, displayElement, inputElement) {
-                // ... 程式碼與之前相同 ...
-                try {
-                    liff.init({ liffId: liffId });
-                    if (!liff.isLoggedIn()) {
-                        liff.login();
-                        return Promise.reject("未登入，已導向 LIFF 登入頁面。");
-                    }
-                    const profile = liff.getProfile();
-                    if (displayElement) {
-                        displayElement.textContent = `👤 目前登入者：${profile.displayName}`;
-                    }
-                    if (inputElement) {
-                        inputElement.value = profile.displayName;
-                    }
-                    return profile;
-                } catch (err) {
-                    if (displayElement) {
-                        displayElement.textContent = "⚠️ 無法取得使用者資訊，請檢查 LIFF 設定或網路連線。";
-                    }
-                    console.error("LIFF 初始化或獲取資料錯誤:", err);
-                    return Promise.reject(err);
-                }
-            }
+/**
+ * 初始化 LIFF 並獲取使用者個人資料。
+ * @param {string} liffId - 你的 LIFF ID。
+ * @param {HTMLElement} displayElement - 用於顯示使用者名稱的 DOM 元素。
+ * @param {HTMLElement} inputElement - 用於自動填入使用者名稱的 input 元素。
+ * @returns {Promise<Object>} - 成功則返回 Promise 包裹的 profile 物件，失敗則拒絕 Promise。
+ */
+async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
+    try {
+        // 確保 liffId 是有效的字串
+        if (!liffId || typeof liffId !== 'string' || liffId.trim() === '') {
+            throw new Error("liffId is necessary for liff.init()");
+        }
+        
+        await liff.init({ liffId: liffId });
 
-            /**
-             * 顯示狀態訊息。
-             * @param {HTMLElement} statusElement - 顯示訊息的 DOM 元素。
-             * @param {string} message - 要顯示的訊息文字。
-             * @param {string} type - 訊息類型 ('success' 或 'error')。
-             * @param {boolean} [autoHide=true] - 訊息是否自動隱藏。
-             * @param {number} [duration=3000] - 訊息自動隱藏的持續時間 (毫秒)。
-             */
-            function showStatusMessage(statusElement, message, type, autoHide = true, duration = 3000) {
-                statusElement.textContent = message;
-                statusElement.className = `message ${type} show`; 
-                
-                if (autoHide) {
-                    setTimeout(() => {
-                        statusElement.classList.remove("show"); 
-                    }, duration);
-                }
-            }
+        if (!liff.isLoggedIn()) {
+            liff.login();
+            return Promise.reject("未登入，已導向 LIFF 登入頁面。");
+        }
 
-            /**
-             * 獲取今天的日期，格式為 YYYY-MM-DD。
-             * @returns {string} - 當前日期字串。
-             */
-            function getTodayDateString() {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
+        const profile = await liff.getProfile();
+        if (displayElement) {
+            displayElement.textContent = `👤 目前登入者：${profile.displayName}`;
+        }
+        if (inputElement) {
+            inputElement.value = profile.displayName;
+        }
+        return profile;
 
-            /**
-             * 處理表單提交的核心邏輯。
-             * @param {HTMLFormElement} formElement - 要處理的表單 DOM 元素。
-             * @param {HTMLElement} submitButton - 提交按鈕 DOM 元素。
-             * @param {HTMLElement} statusElement - 顯示狀態訊息的 DOM 元素。
-             * @param {string} scriptURL - Google Apps Script 的部署 URL。
-             * @param {string} action - 要傳遞給 GAS 的動作名稱 (例如 'submitCustomerData')。
-             * @param {Function} [onSuccessCallback] - 提交成功後執行的回呼函數 (可選)。
-             * @param {Function} [onErrorCallback] - 提交失敗後執行的回呼函數 (可選)。
-             */
-            async function handleFormSubmission(formElement, submitButton, statusElement, scriptURL, action, onSuccessCallback = () => {}, onErrorCallback = () => {}) {
-                submitButton.disabled = true;
-                submitButton.textContent = "資料送出中...";
+    } catch (err) {
+        if (displayElement) {
+            displayElement.textContent = "⚠️ 無法取得使用者資訊，請檢查 LIFF 設定或網路連線。";
+        }
+        console.error("LIFF 初始化或獲取資料錯誤:", err);
+        return Promise.reject(err);
+    }
+}
 
-                const formData = new FormData(formElement);
-                formData.append('action', action); // 【新增】添加 action 參數
+/**
+ * 顯示狀態訊息。
+ * @param {HTMLElement} statusElement - 顯示訊息的 DOM 元素。
+ * @param {string} message - 要顯示的訊息文字。
+ * @param {string} type - 訊息類型 ('success' 或 'error')。
+ * @param {boolean} [autoHide=true] - 訊息是否自動隱藏。
+ * @param {number} [duration=3000] - 訊息自動隱藏的持續時間 (毫秒)。
+ */
+function showStatusMessage(statusElement, message, type, autoHide = true, duration = 3000) {
+    statusElement.textContent = message;
+    statusElement.className = `message ${type} show`; 
+    
+    if (autoHide) {
+        setTimeout(() => {
+            statusElement.classList.remove("show"); 
+        }, duration);
+    }
+}
 
-                try {
-                    const response = await fetch(scriptURL, {
-                        method: 'POST',
-                        body: formData 
-                    });
+/**
+ * 獲取今天的日期，格式為 YYYY-MM-DD。
+ * @returns {string} - 當前日期字串。
+ */
+function getTodayDateString() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
-                    if (response.ok) {
-                        showStatusMessage(statusElement, "✅ 資料已成功送出！", "success");
-                        onSuccessCallback();
-                    } else {
-                        const errorText = await response.text();
-                        showStatusMessage(statusElement, `❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
-                        console.error("提交失敗的 HTTP 響應:", response.status, errorText);
-                        onErrorCallback(errorText);
-                    }
-                } catch (err) {
-                    showStatusMessage(statusElement, "❌ 提交時發生錯誤，請檢查網路連線或服務。", "error", false); 
-                    console.error("Fetch 錯誤:", err);
-                    onErrorCallback(err.message);
-                } finally {
-                    setTimeout(() => {
-                        submitButton.disabled = false;
-                        submitButton.textContent = "送出資料";
-                    }, 3000); 
-                }
-            }
-            
+/**
+ * 處理表單提交的核心邏輯。
+ * @param {HTMLFormElement} formElement - 要處理的表單 DOM 元素。
+ * @param {HTMLElement} submitButton - 提交按鈕 DOM 元素。
+ * @param {HTMLElement} statusElement - 顯示狀態訊息的 DOM 元素。
+ * @param {string} scriptURL - Google Apps Script 的部署 URL。
+ * @param {string} action - 要傳遞給 GAS 的動作名稱 (例如 'submitCustomerData')。
+ * @param {Function} [onSuccessCallback] - 提交成功後執行的回呼函數 (可選)。
+ * @param {Function} [onErrorCallback] - 提交失敗後執行的回呼函數 (可選)。
+ */
+async function handleFormSubmission(formElement, submitButton, statusElement, scriptURL, action, onSuccessCallback = () => {}, onErrorCallback = () => {}) {
+    submitButton.disabled = true;
+    submitButton.textContent = "資料送出中...";
+
+    const formData = new FormData(formElement);
+    formData.append('action', action); // 添加 action 參數
+
+    try {
+        const response = await fetch(scriptURL, {
+            method: 'POST',
+            body: formData 
+        });
+
+        if (response.ok) {
+            showStatusMessage(statusElement, "✅ 資料已成功送出！", "success");
+            onSuccessCallback();
+        } else {
+            const errorText = await response.text();
+            showStatusMessage(statusElement, `❌ 送出失敗！錯誤: ${errorText}`, "error", false); 
+            console.error("提交失敗的 HTTP 響應:", response.status, errorText);
+            onErrorCallback(errorText);
+        }
+    } catch (err) {
+        showStatusMessage(statusElement, "❌ 提交時發生錯誤，請檢查網路連線或服務。", "error", false); 
+        console.error("Fetch 錯誤:", err);
+        onErrorCallback(err.message);
+    } finally {
+        setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = "送出資料";
+        }, 3000); 
+    }
+}
