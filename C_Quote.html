@@ -16,7 +16,7 @@
 </head>
 <body>
 
-    <h1>報價維護 V1.0</h1>
+    <h1>報價維護 V1.01</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
@@ -29,6 +29,9 @@
         <select name="product" id="product" required class="w-full p-2 border rounded-md mb-4">
             <option value="">載入中...</option>
         </select>
+
+        <label for="unitPrice">單價:</label>
+        <input type="number" name="unitPrice" id="unitPrice" placeholder="請輸入單價" min="0" step="0.01" class="w-full p-2 border rounded-md mb-4" required>
 
         <label for="quoteDate">報價日期:</label>
         <input type="date" name="quoteDate" id="quoteDate" required class="w-full p-2 border rounded-md mb-4">
@@ -55,6 +58,7 @@
         const quoteDateInput = document.getElementById("quoteDate");
         const customerSelect = document.getElementById("customer");
         const productSelect = document.getElementById("product");
+        const unitPriceInput = document.getElementById("unitPrice"); // 單價輸入框
         const quoteForm = document.getElementById("quoteForm");
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
@@ -82,13 +86,13 @@
                     customerSelect.innerHTML = '<option value="">無可用客戶資料</option>';
                 }
 
-                // 獲取產品資料 (【修正點】同時傳遞 sales 參數)
+                // 獲取產品資料 (傳遞 sales 參數用於篩選)
                 const productResponse = await fetch(`${gasDataFetchURL}?action=getProductsForQuote&sales=${encodeURIComponent(currentSalesDisplayName)}`);
                 const productData = await productResponse.json();
                 
                 productSelect.innerHTML = '<option value="">請選擇產品</option>'; // 清空並添加預設選項
                 if (productData.products && productData.products.length > 0) {
-                    productData.products.forEach(product => {
+                    productData.products.forEach(product => { 
                         const option = document.createElement('option');
                         option.value = product;
                         option.textContent = product;
@@ -118,7 +122,7 @@
                 await fetchDropdownData(); // 獲取下拉選單資料
 
             } catch (err) {
-                showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
+                showStatusMessage(statusElement, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("報價頁面初始化錯誤:", err);
             }
         }
@@ -129,6 +133,7 @@
             quoteDateInput.value = getTodayDateString(); // 重新設定日期
             customerSelect.value = ""; 
             productSelect.value = "";
+            unitPriceInput.value = ""; // 清空單價
             customerSelect.focus(); // 將焦點移回客戶下拉選單
         }
 
