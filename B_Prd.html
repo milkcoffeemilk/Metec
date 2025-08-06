@@ -9,6 +9,8 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入設定檔 (必須在 liff_utils.js 之前) -->
+    <script src="config.js"></script>
     <!-- 引入共通 JavaScript 函數 -->
     <script src="liff_utils.js"></script>
 </head>
@@ -39,10 +41,9 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 請替換成你的 LIFF ID (與客戶資料頁面共用或獨立)
+        // 請替換成你的 LIFF ID (此頁面專屬)
         const liffId = "2007824757-mOkx2arK"; 
-        // 請替換成你的統一GAS專案部署網址
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
+        // GAS 部署網址將從 config.js 獲取
 
         const operatorNameDisplay = document.getElementById("operatorNameDisplay");
         const operatorInput = document.getElementById("operator");
@@ -50,21 +51,17 @@
         const productForm = document.getElementById("productForm");
         const productCodeInput = document.getElementById("productCode");
         const productNameInput = document.getElementById("productName");
-        // salesPriceInput 和 stockQuantityInput 已移除
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
 
         // 頁面初始化函數
         async function initPage() {
             try {
-                // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
-                // 注意：這裡的 displayElement 和 inputElement 變數名與 liff_utils.js 中的參數名匹配
+                // initLiffAndGetProfile 會在內部查詢實際名字
                 await initLiffAndGetProfile(liffId, operatorNameDisplay, operatorInput);
-                // 直接呼叫 liff_utils.js 中的 getTodayDateString
                 recordDateInput.value = getTodayDateString();
 
             } catch (err) {
-                // 直接呼叫 liff_utils.js 中的 showStatusMessage
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("產品頁面初始化錯誤:", err);
             }
@@ -80,14 +77,12 @@
         // 監聽表單提交事件
         productForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            // 直接呼叫 liff_utils.js 中的 handleFormSubmission
-            // 注意：這裡需要傳遞 'submitProductData' 作為 action 參數
             handleFormSubmission(
                 productForm, 
                 submitButton, 
                 statusMessage, 
-                scriptURL, 
-                "submitProductData", // <-- 新增 action 參數
+                APP_CONFIG.gasScriptURL, // 使用 APP_CONFIG.gasScriptURL
+                "submitProductData", 
                 onProductSubmitSuccess
             );
         });

@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>客戶資料建檔</title>
-    <!-- 確保這裡只有這行用於 Tailwind CSS，沒有 <script src="https://cdn.tailwindcss.com"></script> -->
+    <!-- 引入預編譯的 Tailwind CSS 檔案 -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入設定檔 (必須在 liff_utils.js 之前) -->
+    <script src="config.js"></script>
     <!-- 引入共通 JavaScript 函數 -->
-    <script src="config.js"></script>    
     <script src="liff_utils.js"></script>
 </head>
 <body>
 
-    <h1>客戶資料建檔 V1.24</h1>
+    <h1>客戶資料建檔 V1.12</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="customerForm">
         <label for="customerCode">客戶編號:</label>
-        <input type="number" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" min="1000" max="9999" step="1" required>
+        <input type="number" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" min="10000" max="99999" step="1" required>
 
         <label for="customerName">客戶名稱:</label>
         <input type="text" name="customerName" id="customerName" placeholder="請輸入客戶名稱" required>
@@ -39,10 +40,9 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 請替換成你的 LIFF ID (這必須是您在 LINE Developers Console 中為此 LIFF App 設定的 LIFF ID)
+        // 請替換成你的 LIFF ID (此頁面專屬)
         const liffId = "2007824757-R2rn6zYv"; 
-        // 請替換成你的統一GAS專案部署網址 (這必須是您整合後的單一 GAS 專案部署網址)
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
+        // GAS 部署網址將從 config.js 獲取
 
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
@@ -56,14 +56,11 @@
         // 頁面初始化函數
         async function initPage() {
             try {
-                // 直接呼叫 liff_utils.js 中的 initLiffAndGetProfile
-                // 錯誤訊息 "liffId is necessary" 來自這裡的 liff.init()
+                // initLiffAndGetProfile 會在內部查詢實際名字
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
-                // 直接呼叫 liff_utils.js 中的 getTodayDateString
                 recordDateInput.value = getTodayDateString();
 
             } catch (err) {
-                // 直接呼叫 liff_utils.js 中的 showStatusMessage
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("客戶頁面初始化錯誤:", err);
             }
@@ -79,14 +76,12 @@
         // 監聽表單提交事件
         customerForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            // 直接呼叫 liff_utils.js 中的 handleFormSubmission
-            // 注意：這裡需要傳遞 'submitCustomerData' 作為 action 參數
             handleFormSubmission(
                 customerForm, 
                 submitButton, 
                 statusMessage, 
-                scriptURL, 
-                "submitCustomerData", // <-- 新增 action 參數
+                APP_CONFIG.gasScriptURL, // 使用 APP_CONFIG.gasScriptURL
+                "submitCustomerData", 
                 onCustomerSubmitSuccess
             );
         });

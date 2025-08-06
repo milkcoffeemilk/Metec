@@ -9,12 +9,14 @@
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <!-- 引入共通 CSS 樣式 -->
     <link rel="stylesheet" href="common_styles.css">
+    <!-- 引入設定檔 (必須在 liff_utils.js 之前) -->
+    <script src="config.js"></script>
     <!-- 引入共通 JavaScript 函數 -->
     <script src="liff_utils.js"></script>
 </head>
 <body>
 
-    <h1>報價維護 V1.07</h1>
+    <h1>報價維護 V1.0</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
@@ -43,21 +45,19 @@
     <div id="statusMessage" class="message"></div>
 
     <script>
-        // 將所有 DOM 元素變數宣告移到最上方
+        // 請替換成你的 LIFF ID (此頁面專屬)
+        const liffId = "2007824757-xMAag5o7"; 
+        // GAS 部署網址將從 config.js 獲取
+        const gasDataFetchURL = APP_CONFIG.gasScriptURL; // doGet 請求的 GAS 部署網址，使用 APP_CONFIG
+
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
-        const quoteDateInput = document.getElementById("quoteDate"); // 正確的變數名稱
+        const quoteDateInput = document.getElementById("quoteDate");
         const customerSelect = document.getElementById("customer");
         const productSelect = document.getElementById("product");
         const quoteForm = document.getElementById("quoteForm");
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
-
-        // 請替換成你的 LIFF ID (與其他頁面共用或獨立)
-        const liffId = "2007824757-xMAag5o7"; 
-        // 請替換成你的統一GAS專案部署網址 (doPost 和 doGet 都使用這個 URL)
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzCNTksYFIPRKTfFjX4MKoHmNBauBjd9I0ogs5H-TfotL3il-I79gtfJmE2cOlwyKBnXw/exec"; 
-        const gasDataFetchURL = scriptURL; // doGet 請求的 GAS 部署網址，通常與 scriptURL 相同
 
         let currentSalesDisplayName = ""; // 用於儲存當前業務的 LINE 顯示名稱，以便篩選客戶
 
@@ -100,7 +100,6 @@
 
             } catch (error) {
                 console.error("獲取下拉選單資料失敗:", error);
-                // 使用共通的 showStatusMessage 函數
                 showStatusMessage(statusMessage, "❌ 無法載入下拉選單資料。", "error", false);
                 customerSelect.innerHTML = '<option value="">載入失敗</option>';
                 productSelect.innerHTML = '<option value="">載入失敗</option>';
@@ -110,18 +109,15 @@
         // 頁面初始化函數
         async function initPage() {
             try {
-                // 初始化 LIFF 並獲取使用者資料
+                // initLiffAndGetProfile 會在內部查詢實際名字
                 const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
                 currentSalesDisplayName = profile.displayName; // 儲存業務名稱
                 
-                // 自動填入今天的日期
-                quoteDateInput.value = getTodayDateString(); // 【修正點】使用正確的變數名稱
+                quoteDateInput.value = getTodayDateString();
                 
-                // 獲取下拉選單資料
-                await fetchDropdownData(); 
+                await fetchDropdownData(); // 獲取下拉選單資料
 
             } catch (err) {
-                // 使用共通的 showStatusMessage 函數
                 showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("報價頁面初始化錯誤:", err);
             }
@@ -131,7 +127,6 @@
         function onQuoteSubmitSuccess() {
             quoteForm.reset(); // 清空所有欄位
             quoteDateInput.value = getTodayDateString(); // 重新設定日期
-            // 下拉選單會自動回到預設選項，但為了確保一致性，可以明確設定
             customerSelect.value = ""; 
             productSelect.value = "";
             customerSelect.focus(); // 將焦點移回客戶下拉選單
@@ -144,8 +139,8 @@
                 quoteForm, 
                 submitButton, 
                 statusMessage, 
-                scriptURL, 
-                "submitQuoteData", // <-- 新增 action 參數
+                APP_CONFIG.gasScriptURL, // 使用 APP_CONFIG.gasScriptURL
+                "submitQuoteData", 
                 onQuoteSubmitSuccess
             );
         });
