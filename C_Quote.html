@@ -16,14 +16,20 @@
 </head>
 <body>
 
-    <h1>報價維護 V1.01</h1>
+    <h1>報價維護 V1.02</h1>
     <div id="salesNameDisplay">🔄 載入業務資訊...</div>
 
     <form id="quoteForm">
-        <label for="customer">客戶:</label>
-        <select name="customer" id="customer" required class="w-full p-2 border rounded-md mb-4">
-            <option value="">載入中...</option>
-        </select>
+        <div class="flex items-end mb-4">
+            <div class="flex-grow">
+                <label for="customer">客戶:</label>
+                <select name="customer" id="customer" required class="w-full p-2 border rounded-md">
+                    <option value="">載入中...</option>
+                </select>
+            </div>
+            <!-- 【新增】新增客戶按鈕 -->
+            <button type="button" id="addCustomerButton" class="hidden ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300 ease-in-out">新增客戶</button>
+        </div>
 
         <label for="product">產品:</label>
         <select name="product" id="product" required class="w-full p-2 border rounded-md mb-4">
@@ -53,15 +59,19 @@
         // GAS 部署網址將從 config.js 獲取
         const gasDataFetchURL = APP_CONFIG.gasScriptURL; // doGet 請求的 GAS 部署網址，使用 APP_CONFIG
 
+        // 【重要】請替換為您的 A_Cust.html 的公開可訪問 URL
+        const A_Cust_HTML_URL = "https://liff.line.me/2007824757-R2rn6zYv"; 
+
         const salesNameDisplay = document.getElementById("salesNameDisplay");
         const salesInput = document.getElementById("sales");
         const quoteDateInput = document.getElementById("quoteDate");
         const customerSelect = document.getElementById("customer");
         const productSelect = document.getElementById("product");
-        const unitPriceInput = document.getElementById("unitPrice"); // 單價輸入框
+        const unitPriceInput = document.getElementById("unitPrice");
         const quoteForm = document.getElementById("quoteForm");
         const submitButton = document.getElementById("submitButton");
         const statusMessage = document.getElementById("statusMessage");
+        const addCustomerButton = document.getElementById("addCustomerButton"); // 【新增】獲取新增客戶按鈕
 
         let currentSalesDisplayName = ""; // 用於儲存當前業務的 LINE 顯示名稱，以便篩選客戶
 
@@ -74,16 +84,19 @@
                 const customerResponse = await fetch(`${gasDataFetchURL}?action=getCustomersForQuote&sales=${encodeURIComponent(currentSalesDisplayName)}`);
                 const customerData = await customerResponse.json();
                 
-                customerSelect.innerHTML = '<option value="">請選擇客戶</option>'; // 清空並添加預設選項
+                customerSelect.innerHTML = ''; // 清空所有選項
                 if (customerData.customers && customerData.customers.length > 0) {
+                    customerSelect.innerHTML = '<option value="">請選擇客戶</option>'; // 添加預設選項
                     customerData.customers.forEach(customer => {
                         const option = document.createElement('option');
                         option.value = customer;
                         option.textContent = customer;
                         customerSelect.appendChild(option);
                     });
+                    addCustomerButton.classList.add('hidden'); // 有客戶資料時隱藏按鈕
                 } else {
-                    customerSelect.innerHTML = '<option value="">無可用客戶資料</option>';
+                    customerSelect.innerHTML = '<option value="">無可用客戶資料，請新增</option>'; // 顯示提示
+                    addCustomerButton.classList.remove('hidden'); // 無客戶資料時顯示按鈕
                 }
 
                 // 獲取產品資料 (傳遞 sales 參數用於篩選)
@@ -104,9 +117,10 @@
 
             } catch (error) {
                 console.error("獲取下拉選單資料失敗:", error);
-                showStatusMessage(statusElement, "❌ 無法載入下拉選單資料。", "error", false);
+                showStatusMessage(statusMessage, "❌ 無法載入下拉選單資料。", "error", false);
                 customerSelect.innerHTML = '<option value="">載入失敗</option>';
                 productSelect.innerHTML = '<option value="">載入失敗</option>';
+                addCustomerButton.classList.remove('hidden'); // 載入失敗時也顯示按鈕
             }
         }
 
@@ -122,7 +136,7 @@
                 await fetchDropdownData(); // 獲取下拉選單資料
 
             } catch (err) {
-                showStatusMessage(statusElement, "❌ 頁面初始化失敗，請重新載入。", "error", false);
+                showStatusMessage(statusMessage, "❌ 頁面初始化失敗，請重新載入。", "error", false);
                 console.error("報價頁面初始化錯誤:", err);
             }
         }
@@ -135,6 +149,8 @@
             productSelect.value = "";
             unitPriceInput.value = ""; // 清空單價
             customerSelect.focus(); // 將焦點移回客戶下拉選單
+            // 重新載入下拉選單，以反映可能新增的客戶
+            fetchDropdownData(); 
         }
 
         // 監聽表單提交事件
@@ -148,6 +164,18 @@
                 "submitQuoteData", 
                 onQuoteSubmitSuccess
             );
+        });
+
+        // 【新增】監聽新增客戶按鈕點擊事件
+        addCustomerButton.addEventListener('click', () => {
+            if (liff.isLoggedIn() && A_Cust_HTML_URL) {
+                liff.openWindow({
+                    url: A_Cust_HTML_URL,
+                    external: false // 在 LINE 應用程式內開啟新視窗
+                });
+            } else {
+                showStatusMessage(statusMessage, "❌ 無法開啟新增客戶頁面，請確認 LIFF 登入狀態或網址。", "error", false);
+            }
         });
 
         // 啟動頁面初始化
