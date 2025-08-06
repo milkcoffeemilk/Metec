@@ -82,8 +82,8 @@
                     customerSelect.innerHTML = '<option value="">無可用客戶資料</option>';
                 }
 
-                // 獲取產品資料
-                const productResponse = await fetch(`${gasDataFetchURL}?action=getProductsForQuote`);
+                // 獲取產品資料 (【修正點】同時傳遞 sales 參數)
+                const productResponse = await fetch(`${gasDataFetchURL}?action=getProductsForQuote&sales=${encodeURIComponent(currentSalesDisplayName)}`);
                 const productData = await productResponse.json();
                 
                 productSelect.innerHTML = '<option value="">請選擇產品</option>'; // 清空並添加預設選項
@@ -100,7 +100,7 @@
 
             } catch (error) {
                 console.error("獲取下拉選單資料失敗:", error);
-                showStatusMessage(statusMessage, "❌ 無法載入下拉選單資料。", "error", false);
+                showStatusMessage(statusElement, "❌ 無法載入下拉選單資料。", "error", false);
                 customerSelect.innerHTML = '<option value="">載入失敗</option>';
                 productSelect.innerHTML = '<option value="">載入失敗</option>';
             }
@@ -111,7 +111,7 @@
             try {
                 // initLiffAndGetProfile 會在內部查詢實際名字並設定顯示，同時將 LINE 名稱填入 input
                 const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
-                currentSalesDisplayName = profile.displayName; // 儲存 LINE 顯示名稱，用於篩選客戶
+                currentSalesDisplayName = profile.displayName; // 儲存 LINE 顯示名稱，用於篩選客戶和產品
                 
                 quoteDateInput.value = getTodayDateString();
                 
