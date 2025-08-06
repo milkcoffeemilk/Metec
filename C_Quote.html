@@ -109,9 +109,9 @@
         // 頁面初始化函數
         async function initPage() {
             try {
-                // initLiffAndGetProfile 會在內部查詢實際名字
+                // initLiffAndGetProfile 會在內部查詢實際名字並設定顯示，同時將 LINE 名稱填入 input
                 const profile = await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
-                currentSalesDisplayName = profile.displayName; // 儲存業務名稱
+                currentSalesDisplayName = profile.displayName; // 儲存 LINE 顯示名稱，用於篩選客戶
                 
                 quoteDateInput.value = getTodayDateString();
                 

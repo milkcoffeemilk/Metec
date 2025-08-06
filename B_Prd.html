@@ -57,7 +57,7 @@
         // 頁面初始化函數
         async function initPage() {
             try {
-                // initLiffAndGetProfile 會在內部查詢實際名字
+                // initLiffAndGetProfile 會在內部查詢實際名字並設定顯示，同時將 LINE 名稱填入 input
                 await initLiffAndGetProfile(liffId, operatorNameDisplay, operatorInput);
                 recordDateInput.value = getTodayDateString();
 

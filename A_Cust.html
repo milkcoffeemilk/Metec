@@ -23,7 +23,8 @@
 
     <form id="customerForm">
         <label for="customerCode">客戶編號:</label>
-        <input type="number" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" min="10000" max="99999" step="1" required>
+        <!-- 【修正點】客戶編號 min/max 範圍 -->
+        <input type="number" name="customerCode" id="customerCode" placeholder="請輸入客戶編號" min="1000" max="9999" step="1" required>
 
         <label for="customerName">客戶名稱:</label>
         <input type="text" name="customerName" id="customerName" placeholder="請輸入客戶名稱" required>
@@ -56,7 +57,7 @@
         // 頁面初始化函數
         async function initPage() {
             try {
-                // initLiffAndGetProfile 會在內部查詢實際名字
+                // initLiffAndGetProfile 會在內部查詢實際名字並設定顯示，同時將 LINE 名稱填入 input
                 await initLiffAndGetProfile(liffId, salesNameDisplay, salesInput);
                 recordDateInput.value = getTodayDateString();
 
