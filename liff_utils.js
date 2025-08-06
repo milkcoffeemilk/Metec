@@ -38,7 +38,7 @@ async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
                 // 這裡不拋出錯誤，允許繼續使用 LINE 顯示名稱
             }
         } else {
-            console.warn("APP_CONFIG.gasScriptURL 未定義，無法查詢實際名字。");
+            console.warn("APP_CONFIG.gasScriptURL 未定義，無法查詢實際名字。請確認 config.js 已正確載入並設定。");
         }
 
 
