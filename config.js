@@ -3,5 +3,5 @@
 
 const APP_CONFIG = {
     // 請替換為您的統一 Google Apps Script 專案的部署網址
-    gasScriptURL: "https://script.google.com/macros/s/AKfycbycN8MpHqhxrz4mbZKJ7-MnVwvXfNOjouFcCdOwQYCBs1e4uEv43b3rnjdpGYXba3reww/exec" 
+    gasScriptURL: "https://script.google.com/macros/s/AKfycbzsRsfsqZJi3BMZuBIiDoCKCPYtH3kNj_b9NAJBxiYoVTsLWcWLqIMu6sQzGoTkad2a_w/exec" 
 };
