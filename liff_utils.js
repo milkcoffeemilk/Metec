@@ -20,11 +20,33 @@ async function initLiffAndGetProfile(liffId, displayElement, inputElement) {
         }
 
         const profile = await liff.getProfile();
+        const lineDisplayName = profile.displayName;
+        let displayUserName = lineDisplayName; // 預設顯示 LINE 顯示名稱
+
+        // 從 GAS 查詢實際名字
+        // 假設 APP_CONFIG.gasScriptURL 已經在 config.js 中定義並可被存取
+        if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.gasScriptURL) {
+            try {
+                const response = await fetch(`${APP_CONFIG.gasScriptURL}?action=getActualNameByLineDisplayName&lineDisplayName=${encodeURIComponent(lineDisplayName)}`);
+                const data = await response.json();
+
+                if (data && data.actualName) {
+                    displayUserName = data.actualName; // 如果找到實際名字，則使用實際名字
+                }
+            } catch (fetchError) {
+                console.warn("從 GAS 獲取實際名字失敗，將使用 LINE 顯示名稱:", fetchError);
+                // 這裡不拋出錯誤，允許繼續使用 LINE 顯示名稱
+            }
+        } else {
+            console.warn("APP_CONFIG.gasScriptURL 未定義，無法查詢實際名字。");
+        }
+
+
         if (displayElement) {
-            displayElement.textContent = `👤 目前登入者：${profile.displayName}`;
+            displayElement.textContent = `👤 目前登入者：${displayUserName}`;
         }
         if (inputElement) {
-            inputElement.value = profile.displayName;
+            inputElement.value = displayUserName;
         }
         return profile;
 
