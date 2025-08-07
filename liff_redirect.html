@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIFF 轉址中繼頁面</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            color: #444;
+        }
+        h1 {
+            color: #00B900;
+        }
+    </style>
+</head>
+<body>
+    <h1>正在跳轉到您的應用程式...</h1>
+    <p>請稍候，我們正在為您準備頁面。</p>
+    <script>
+        // 【重要】請替換為您的 LIFF ID (與 LINE Developers 後台設定相同)
+        const liffId = "2007824757-dzj7w1bM";
+
+        // 【重要】請替換為您 ASP.NET 網站的 HTTP 網址
+        const targetUrl = "http://220.133.248.150:81/WebCRM/Blank.aspx";
+
+        async function initializeLiffAndRedirect() {
+            try {
+                // 1. 初始化 LIFF
+                await liff.init({ liffId: liffId });
+
+                // 檢查是否已登入
+                if (!liff.isLoggedIn()) {
+                    // 如果沒有登入，LIFF 會自動導向登入頁面
+                    liff.login({ redirectUri: window.location.href });
+                    return;
+                }
+
+                // 2. 取得使用者資訊
+                const profile = await liff.getProfile();
+                const userId = profile.userId;
+                const displayName = profile.displayName;
+
+                // 3. 建立轉址 URL，將使用者資訊作為 URL 參數
+                const redirectUrl = `${targetUrl}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
+
+                // 4. 執行轉址
+                window.location.href = redirectUrl;
+
+            } catch (err) {
+                console.error("LIFF 初始化或轉址失敗", err);
+                document.body.innerHTML = `<h1>發生錯誤</h1><p>無法載入頁面，請重新嘗試。錯誤訊息：${err.message}</p>`;
+            }
+        }
+
+        // 啟動轉址程序
+        initializeLiffAndRedirect();
+    </script>
+</body>
+</html>
