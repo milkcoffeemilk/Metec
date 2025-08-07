@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 轉址中繼頁面</title>
+    <title>LIFF 轉址中繼頁面 V1.01</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -15,40 +15,69 @@
         h1 {
             color: #00B900;
         }
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: inline-block;
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
     <h1>正在跳轉到您的應用程式...</h1>
     <p>請稍候，我們正在為您準備頁面。</p>
+    
+    <div id="debugOutput" class="debug-info" style="display: none;">
+        <h2>除錯資訊</h2>
+        <p><strong>使用者 ID:</strong> <span id="userIdDisplay">未取得</span></p>
+        <p><strong>使用者名稱:</strong> <span id="displayNameDisplay">未取得</span></p>
+    </div>
+
     <script>
+        // LIFF 轉址中繼頁面程式碼 V1.01
+
         // 【重要】請替換為您的 LIFF ID (與 LINE Developers 後台設定相同)
         const liffId = "2007824757-dzj7w1bM";
 
         // 【重要】請替換為您 ASP.NET 網站的 HTTP 網址
         const targetUrl = "http://220.133.248.150:81/WebCRM/Metec/LiffLogin.aspx";
 
+        // 【除錯開關】
+        // 將此變數設為 false，可停止轉址，並顯示使用者資訊，方便除錯。
+        //const redirectToApp = true;
+        const redirectToApp = false;
+
         async function initializeLiffAndRedirect() {
             try {
-                // 1. 初始化 LIFF
                 await liff.init({ liffId: liffId });
 
-                // 檢查是否已登入
                 if (!liff.isLoggedIn()) {
-                    // 如果沒有登入，LIFF 會自動導向登入頁面
                     liff.login({ redirectUri: window.location.href });
                     return;
                 }
 
-                // 2. 取得使用者資訊
                 const profile = await liff.getProfile();
                 const userId = profile.userId;
                 const displayName = profile.displayName;
 
-                // 3. 建立轉址 URL，將使用者資訊作為 URL 參數
-                const redirectUrl = `${targetUrl}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
+                // 更新頁面上的除錯資訊
+                document.getElementById('userIdDisplay').textContent = userId;
+                document.getElementById('displayNameDisplay').textContent = displayName;
+                document.getElementById('debugOutput').style.display = 'block';
 
-                // 4. 執行轉址
-                window.location.href = redirectUrl;
+                if (redirectToApp) {
+                    // 建立轉址 URL，將使用者資訊作為 URL 參數
+                    const redirectUrl = `${targetUrl}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
+
+                    // 執行轉址
+                    window.location.href = redirectUrl;
+                } else {
+                    // 如果關閉轉址，則只顯示資訊，不進行跳轉
+                    document.querySelector('h1').textContent = "除錯模式已啟用";
+                    document.querySelector('p').textContent = "已成功取得 LIFF 資訊，但已關閉轉址。";
+                }
 
             } catch (err) {
                 console.error("LIFF 初始化或轉址失敗", err);
@@ -56,7 +85,6 @@
             }
         }
 
-        // 啟動轉址程序
         initializeLiffAndRedirect();
     </script>
 </body>
