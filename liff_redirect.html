@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 轉址中繼頁面 V1.02</title>
+    <title>LIFF 轉址中繼頁面 V1.03</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -36,7 +36,7 @@
     </div>
 
     <script>
-        // LIFF 轉址中繼頁面程式碼 V1.02
+        // LIFF 轉址中繼頁面程式碼 V1.03
 
         // 【重要】請替換為您的 LIFF ID (與 LINE Developers 後台設定相同)
         const liffId = "2007824757-dzj7w1bM";
@@ -44,7 +44,7 @@
         // 【重要】請替換為您 ASP.NET 網站的 HTTP 網址
         const targetUrl = "http://220.133.248.150:81/WebCRM/Metec/LiffLogin.aspx";
 
-        // 【除錯開關】設為 false 可停用轉址，僅顯示使用者資訊
+        // 【除錯開關】設為 true 啟用轉址
         const enableRedirect = true;
 
         async function initializeLiffAndRedirect() {
