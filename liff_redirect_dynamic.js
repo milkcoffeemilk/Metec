@@ -3,7 +3,7 @@ const liffId = "2007824757-dzj7w1bM"; // ★ 你的 LIFF ID
 const baseUrl = "http://220.133.248.150:81/WebCRM/Metec/"; // ★ ASP.NET 網站根路徑
 const pageMap = {
   home: "Home.aspx",
-  vocation: "Vocation.aspx",
+  vocation: "VacationQuery.aspx",
   report: "Report.aspx",
   approval: "Approval.aspx",
 };
