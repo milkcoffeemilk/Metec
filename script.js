@@ -1,5 +1,5 @@
 // 🚀 替換成你的 LIFF ID
-const LIFF_ID = "2007824757-dzj7w1bM";
+const LIFF_ID = "2007824757-R2rn6zYv";
 let lineProfile = null;
 
 window.onload = async () => {
