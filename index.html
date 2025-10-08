@@ -1,113 +1,82 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>請假表單</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LIFF 主選單整合版 (含載入動畫)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-    input, select, textarea { display: block; margin-bottom: 10px; width: 100%; padding: 8px; box-sizing: border-box; }
-    #userName { margin-bottom: 20px; font-weight: bold; color: green; }
-  </style>
 </head>
-<body>
 
-  <div id="userName">🔄 載入中...</div>
+<body class="bg-gray-100">
+  <!-- 🔹 主容器 -->
+  <div id="mainContent" class="max-w-md mx-auto bg-white shadow-lg rounded-xl mt-4 overflow-hidden opacity-0 pointer-events-none transition-opacity duration-300">
+    <!-- 頁籤列 -->
+    <div class="flex border-b bg-gray-50">
+      <button id="tab1" class="flex-1 py-3 text-center border-b-4 border-blue-500 font-bold">休假</button>
+      <button id="tab2" class="flex-1 py-3 text-center text-gray-500">簽核</button>
+      <button id="tab3" class="flex-1 py-3 text-center text-gray-500">查詢</button>
+    </div>
 
-  <form id="leaveForm">
-    <input type="text" name="name" id="name" placeholder="姓名" required readonly>
+    <!-- 內容區 -->
+    <div id="content" class="p-4 space-y-3">
+      <!-- 第一頁：休假 -->
+      <div id="page1">
+        <h2 class="text-lg font-bold mb-2 text-blue-700">休假功能</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/LeaveApply.aspx')">請假申請</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/LeaveStatus.aspx')">假單狀態</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/LeaveCalendar.aspx')">假期行事曆</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/LeaveRules.aspx')">休假規範</button>
+        </div>
+      </div>
 
-    <select name="leaveType" id="leaveType" required>
-      <option value="">請選擇假別</option>
-      <option value="年假">年假</option>
-      <option value="事假">事假</option>
-      <option value="病假">病假</option>
-      <option value="婚假">婚假</option>
-      <option value="喪假">喪假</option>
-      <option value="公傷假">公傷假</option>
-      <option value="產假">產假</option>
-      <option value="產檢假">產檢假</option>
-      <option value="陪產假">陪產假</option>
-      <option value="公假">公假</option>
-    </select>
+      <!-- 第二頁：簽核 -->
+      <div id="page2" class="hidden">
+        <h2 class="text-lg font-bold mb-2 text-green-700">簽核作業</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/SignList.aspx')">待簽清單</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/SignHistory.aspx')">簽核紀錄</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/SignDelegate.aspx')">代理設定</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/SignHelp.aspx')">簽核說明</button>
+        </div>
+      </div>
 
-    <label>開始時間</label>
-    <input type="datetime-local" name="dateStart" required>
-    <label>結束時間</label>
-    <input type="datetime-local" name="dateEnd" required>
+      <!-- 第三頁：查詢 -->
+      <div id="page3" class="hidden">
+        <h2 class="text-lg font-bold mb-2 text-purple-700">查詢中心</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/AttendanceQuery.aspx')">出勤查詢</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/PayrollQuery.aspx')">薪資查詢</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/OvertimeQuery.aspx')">加班查詢</button>
+          <button class="btn" onclick="redirectWithLineInfo('http://220.133.248.150:81/WebCRM/Metec/Faq.aspx')">常見問題</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <select name="reasonCategory" id="reasonCategory" required>
-      <option value="">請選擇事由</option>
-      <option value="辦理私事">辦理私事</option>
-      <option value="休息">休息</option>
-      <option value="旅遊/娛樂">旅遊/娛樂</option>
-      <option value="生病/就診-家人">生病/就診-家人</option>
-      <option value="生病/就診-本人">生病/就診-本人</option>
-      <option value="本人確診">本人確診</option>
-      <option value="配合登革熱噴藥">配合登革熱噴藥</option>
-      <option value="防疫照顧">防疫照顧</option>
-      <option value="颱風假">颱風假</option>
-      <option value="加班">加班</option>
-      <option value="其他">其他</option>
-    </select>
+  <!-- 🔹 載入中畫面 -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex flex-col justify-center items-center text-white z-50">
+    <svg class="animate-spin h-12 w-12 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+    </svg>
+    <p class="text-lg">正在初始化 LINE LIFF，請稍候...</p>
+  </div>
 
-    <textarea name="reasonText" id="reasonText" placeholder="請輸入說明" style="display:none;"></textarea>
-
-    <button type="submit">送出</button>
-  </form>
-
-  <script>
-    const liffId = "2007824757-mvngBGAJ";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbw3VMlwXiatIW_gC_wWVydQsH8oJaKt-RiJpsxyZgfsaiHVMcBRWcVMndYYS3YhkttZpQ/exec";
-
-    async function main() {
-      await liff.init({ liffId });
-
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
-      try {
-        const profile = await liff.getProfile();
-        document.getElementById("userName").textContent = `👤 目前登入者：${profile.displayName}`;
-        document.getElementById("name").value = profile.displayName;
-      } catch (err) {
-        document.getElementById("userName").textContent = "⚠️ 無法取得使用者資訊";
-        console.error(err);
-      }
+  <style>
+    .btn {
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      font-weight: bold;
+      transition: background-color 0.2s;
     }
+    .btn:hover { background-color: #2563eb; }
+  </style>
 
-    document.getElementById("reasonCategory").addEventListener("change", function () {
-      const reasonText = document.getElementById("reasonText");
-      reasonText.style.display = this.value === "其他" ? "block" : "none";
-    });
-
-    document.getElementById("leaveForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const form = e.target;
-      const formData = new FormData(form);
-
-      // 如果選了「其他」，就改 reasonCategory 的值為其他+內容
-      const reasonCategory = form.reasonCategory.value;
-      const reasonText = form.reasonText.value;
-      if (reasonCategory === "其他" && reasonText.trim() !== "") {
-        formData.set("reasonCategory", `其他：${reasonText}`);
-      }
-
-      fetch(scriptURL, { method: 'POST', body: formData })
-        .then(() => {
-          alert("✅ 已送出！");
-          liff.closeWindow();
-        })
-        .catch(err => {
-          alert("❌ 送出失敗！");
-          console.error(err);
-        });
-    });
-
-    main();
-  </script>
+  <script src="liff_utils.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
