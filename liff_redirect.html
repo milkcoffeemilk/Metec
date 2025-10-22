@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFF 轉址中繼頁面 V1.03</title>
+    <title>LIFF 轉址中繼頁面 V1.04</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body {
@@ -11,17 +11,30 @@
             text-align: center;
             padding-top: 50px;
             color: #444;
+            background-color: #f0f0f0;
         }
         h1 {
             color: #00B900;
+            margin-bottom: 5px;
         }
         .debug-info {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
             display: inline-block;
-            background-color: #f9f9f9;
+            background-color: #ffffff;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .debug-info p {
+            margin: 5px 0;
+            word-break: break-all;
+        }
+        strong {
+            display: inline-block;
+            min-width: 150px;
+            color: #333;
         }
     </style>
 </head>
@@ -30,33 +43,50 @@
     <p>請稍候，我們正在為您準備頁面。</p>
     
     <div id="debugOutput" class="debug-info" style="display: none;">
-        <h2>除錯資訊</h2>
+        <h2>除錯資訊 (V1.04)</h2>
         <p><strong>使用者 ID:</strong> <span id="userIdDisplay">未取得</span></p>
         <p><strong>使用者名稱:</strong> <span id="displayNameDisplay">未取得</span></p>
+        <p><strong>目標參數 (Target):</strong> <span id="targetDisplay">未取得</span></p>
+        <p><strong>完整轉址 URL:</strong> <span id="redirectUrlDisplay">處理中...</span></p>
     </div>
 
     <script>
-        // LIFF 轉址中繼頁面程式碼 V1.03
+        // LIFF 轉址中繼頁面程式碼 V1.04 - 支援參數傳遞
 
         // 【重要】請替換為您的 LIFF ID (與 LINE Developers 後台設定相同)
         const liffId = "2007824757-dzj7w1bM";
 
-        // 【重要】請替換為您 ASP.NET 網站的 HTTP 網址
+        // 【重要】請替換為您 ASP.NET 網站的 HTTP 網址 (請確保這裡**不**包含任何參數)
         const targetUrl = "http://220.133.248.150:81/WebCRM/Metec/LiffLogin.aspx";
-        //const targetUrl = "http://220.133.248.150:81/WebCRM/Metec/%E7%B8%BD%E5%8B%99/VacationQuery.aspx";
+        // 如果您希望跳轉到另一個頁面，請將 LiffLogin.aspx 替換為您的目標頁面，例如：
+        // const targetUrl = "http://220.133.248.150:81/WebCRM/Metec/VacationQuery.aspx";
         
 
         // 【除錯開關】設為 true 啟用轉址
         const enableRedirect = true;
+        
+        /**
+         * 輔助函式：取得當前 URL 中的查詢參數值
+         * @param {string} name 參數名稱
+         * @returns {string | null} 參數值，如果不存在則為 null
+         */
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
 
         async function initializeLiffAndRedirect() {
             try {
+                // 0. 取得額外的 URL 參數 (例如 target=VacationQuery.aspx)
+                const targetParam = getQueryParam('target');
+
                 // 1. 初始化 LIFF SDK
                 await liff.init({ liffId: liffId });
 
                 // 2. 檢查是否已登入
                 if (!liff.isLoggedIn()) {
                     // 如果沒有登入，LIFF 會自動導向登入頁面
+                    // redirectUri 保持為當前頁面，讓登入成功後跳回此頁繼續流程
                     liff.login({ redirectUri: window.location.href });
                     return;
                 }
@@ -65,22 +95,30 @@
                 const profile = await liff.getProfile();
                 const userId = profile.userId;
                 const displayName = profile.displayName;
+                
+                // 5. 建立轉址 URL
+                let redirectUrl = `${targetUrl}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
 
-                // 4. 更新頁面上的除錯資訊
-                document.getElementById('userIdDisplay').textContent = 'userId';
-                document.getElementById('displayNameDisplay').textContent = 'displayName';
+                // 5a. 如果有 target 參數，則一併加入
+                if (targetParam) {
+                    redirectUrl += `&target=${encodeURIComponent(targetParam)}`;
+                }
+
+                // 4. 更新頁面上的除錯資訊 (在建立完 URL 後再更新，以便顯示完整 URL)
+                document.getElementById('userIdDisplay').textContent = userId;
+                document.getElementById('displayNameDisplay').textContent = displayName;
+                document.getElementById('targetDisplay').textContent = targetParam || '無';
+                document.getElementById('redirectUrlDisplay').textContent = redirectUrl;
                 document.getElementById('debugOutput').style.display = 'block';
 
-                if (enableRedirect) {
-                    // 5. 建立轉址 URL，將使用者資訊作為 URL 參數
-                    const redirectUrl = `${targetUrl}?userId=${encodeURIComponent(userId)}&displayName=${encodeURIComponent(displayName)}`;
 
+                if (enableRedirect) {
                     // 6. 執行轉址
                     window.location.href = redirectUrl;
                 } else {
                     // 停用轉址時的顯示內容
-                    document.querySelector('h1').textContent = "除錯模式已啟用";
-                    document.querySelector('p').textContent = "已成功取得 LIFF 資訊，但已關閉轉址。";
+                    document.querySelector('h1').textContent = "除錯模式已啟用 (未跳轉)";
+                    document.querySelector('p').textContent = "已成功取得 LIFF 資訊及參數，請檢查下方資訊。";
                 }
 
             } catch (err) {
@@ -89,6 +127,7 @@
             }
         }
 
+        // 啟動流程
         initializeLiffAndRedirect();
     </script>
 </body>
